@@ -4,8 +4,8 @@ export PATH
 #===============================================================================================
 #   System Required:  CentOS Debian or Ubuntu (32bit/64bit)
 #   Description:  Install kcp-Server(XiaoBao) for CentOS Debian or Ubuntu
-#   Author: Clang <admin@clangcn.com>
-#   Intro:  http://clang.cn
+#   Author: Clang
+#   Intro:  http://koolshare.cn/forum-72-1.html
 #===============================================================================================
 version="1.1"
 str_program_dir="/usr/local/kcp-server"
@@ -18,8 +18,8 @@ function fun_clang.cn(){
     echo ""
     echo "#####################################################################"
     echo "# Install kcp-Server(XiaoBao) for CentOS Debian or Ubuntu(32/64bit)"
-    echo "# Intro: http://clang.cn"
-    echo "# Author: Clang <admin@clangcn.com>"
+    echo "# Intro: http://koolshare.cn/forum-72-1.html"
+    echo "# Author: Clang"
     echo "# Version ${version}"
     echo "#####################################################################"
     echo ""
@@ -224,7 +224,6 @@ function check_curl(){
 # ====== pre_install ======
 function pre_install_clang(){
     #config setting
-    check_net-tools
     echo " Please input your kcp-Server(XiaoBao) server_port and password"
     echo ""
     sshport=`netstat -anp |grep ssh | grep '0.0.0.0:'|cut -d: -f2| awk 'NR==1 { print $1}'`
@@ -394,6 +393,9 @@ function install_program_server_clang(){
     check_centosversion
     check_os_bit
     disable_selinux
+    clear
+    fun_clang.cn
+    check_net-tools
     if [ -s ${str_program_dir}/kcp-server ] && [ -s /etc/init.d/kcp-server ]; then
         echo "kcp-Server(XiaoBao) is installed!"
     else
