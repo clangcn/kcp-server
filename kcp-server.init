@@ -40,9 +40,7 @@ fun_clangcn()
     echo "#############################################################"
     echo "#  Manager ${NAME} v${version} for CentOS/Debian/Ubuntu (32bit/64bit)"
     echo "#  Intro: http://koolshare.cn/forum-72-1.html"
-    echo "#"
     echo "#  Author: Clang"
-    echo "#"
     echo "#############################################################"
     echo ""
 }
