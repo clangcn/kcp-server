@@ -297,7 +297,7 @@ cat > ${str_program_dir}/config.json<<-EOF
     "mode":"fast",
     "port_password":
     {
-        "${serverport}": "${shadowsockspwd}"
+        "${serverport}": "${serverpwd}"
     },
     "_comment":
     {
