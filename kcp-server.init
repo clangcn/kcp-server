@@ -6,8 +6,8 @@
 #=======================================================
 #   System Required:  CentOS/Debian/Ubuntu (32bit/64bit)
 #   Description:  Manager for kcp-server, Written by Clang
-#   Author: Clang <admin@clangcn.com>
-#   Intro:  http://clang.cn
+#   Author: Clang
+#   Intro:  http://koolshare.cn/forum-72-1.html
 #=======================================================
 ### BEGIN INIT INFO
 # Provides:          kcp-server
@@ -29,7 +29,7 @@ LOGFILE=${ProgramPath}/kcp-server.log
 SCRIPTNAME=/etc/init.d/${NAME}
 PID_DIR=/var/run
 PID_FILE=$PID_DIR/kcp-server.pid
-version="1.0"
+version="1.1"
 RET_VAL=0
 
 [ -x $BIN ] || exit 0
@@ -39,9 +39,9 @@ fun_clangcn()
     echo ""
     echo "#############################################################"
     echo "#  Manager ${NAME} v${version} for CentOS/Debian/Ubuntu (32bit/64bit)"
-    echo "#  Intro: http://clang.cn"
+    echo "#  Intro: http://koolshare.cn/forum-72-1.html"
     echo "#"
-    echo "#  Author: Clang <admin@clangcn.com>"
+    echo "#  Author: Clang"
     echo "#"
     echo "#############################################################"
     echo ""
