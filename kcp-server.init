@@ -24,7 +24,7 @@ ProgramName="kcp-server"
 ProgramPath="/usr/local/kcp-server"
 NAME=kcp-server
 BIN=${ProgramPath}/${NAME}
-CONFIGFILE=${ProgramPath}/.kcp_server_config.sh
+CONFIGFILE=${ProgramPath}/config.json
 LOGFILE=${ProgramPath}/kcp-server.log
 SCRIPTNAME=/etc/init.d/${NAME}
 PID_DIR=/var/run
@@ -60,10 +60,6 @@ fun_load_config(){
     if [ ! -r ${CONFIGFILE} ]; then
         echo "config file ${CONFIGFILE} not found"
         return 1
-    else
-        [ ! -x ${CONFIGFILE} ] && chmod 500 ${CONFIGFILE}
-        . ${CONFIGFILE}
-        cd ${ProgramPath}
     fi
 }
 fun_check_port(){
@@ -101,9 +97,8 @@ fun_start()
     fi
     fun_check_port
     fun_load_config
-    echo ${BIN} -l \":${server_port}\" --key \"${server_pass}\" --mtu \"${mtu}\"
     echo -n "Starting ${ProgramName}..."
-    ${BIN} -l ":${server_port}" --key "${server_pass}" --mtu "${mtu}" > ${LOGFILE} 2>&1 &
+    ${BIN} -c ${CONFIGFILE} > ${LOGFILE} 2>&1 &
     PID=`pidof ${NAME}`
     echo $PID > $PID_FILE
     sleep 0.3
