@@ -9,8 +9,8 @@ export PATH
 #===============================================================================================
 version="1.0"
 str_program_dir="/usr/local/kcp-server"
-program_x64_download_url=http://home.ngrok.wang:8080/static/kcp_server
-program_x86_download_url=http://home.ngrok.wang:8080/static/kcp_server_386
+program_x64_download_url=https://github.com/clangcn/kcp-server/raw/master/latest/kcp_server
+program_x86_download_url=https://github.com/clangcn/kcp-server/raw/master/latest/kcp_server_386
 program_init_download_url=https://raw.githubusercontent.com/clangcn/kcp-server/master/kcp-server.init
 str_install_shell=https://raw.githubusercontent.com/clangcn/kcp-server/master/install-kcp-server.sh
 
@@ -310,14 +310,14 @@ EOF
     rm -f ${str_program_dir}/kcp-server
     if [ "${Is_64bit}" == 'y' ] ; then
         if [ ! -s ${str_program_dir}/kcp-server ]; then
-            if ! wget ${program_x64_download_url} -O ${str_program_dir}/kcp-server; then
+            if ! wget --no-check-certificate ${program_x64_download_url} -O ${str_program_dir}/kcp-server; then
                 echo "Failed to download kcp-server file!"
                 exit 1
             fi
         fi
     else
          if [ ! -s ${str_program_dir}/kcp-server ]; then
-            if ! wget ${program_x86_download_url} -O ${str_program_dir}/kcp-server; then
+            if ! wget --no-check-certificate ${program_x86_download_url} -O ${str_program_dir}/kcp-server; then
                 echo "Failed to download kcp-server file!"
                 exit 1
             fi
@@ -489,14 +489,14 @@ function update_program_server_clang(){
         rm -f /usr/bin/kcp-server ${str_program_dir}/kcp-server
         if [ "${Is_64bit}" == 'y' ] ; then
             if [ ! -s ${str_program_dir}/kcp-server ]; then
-                if ! wget ${program_x64_download_url} -O ${str_program_dir}/kcp-server; then
+                if ! wget --no-check-certificate ${program_x64_download_url} -O ${str_program_dir}/kcp-server; then
                     echo "Failed to download kcp-server file!"
                     exit 1
                 fi
             fi
         else
              if [ ! -s ${str_program_dir}/kcp-server ]; then
-                if ! wget ${program_x86_download_url} -O ${str_program_dir}/kcp-server; then
+                if ! wget --no-check-certificate ${program_x86_download_url} -O ${str_program_dir}/kcp-server; then
                     echo "Failed to download kcp-server file!"
                     exit 1
                 fi
