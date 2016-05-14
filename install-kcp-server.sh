@@ -287,7 +287,7 @@ function pre_install_clang(){
 # Config file
 cat > ${str_program_dir}/config.json<<-EOF
 {
-    "server":"0.0.0.0",
+    "server":"${defIP}",
     "socks5_port":9081,
     "redir_port":0,
     "tuncrypt":0,
@@ -305,7 +305,20 @@ cat > ${str_program_dir}/config.json<<-EOF
     }
 }
 EOF
-
+cat > ${str_program_dir}/client.json<<-EOF
+{
+    "server":"${defIP}",
+    "server_port":"${serverport}",
+    "password":"${serverpwd}",
+    "socks5_port":9081,
+    "redir_port":0,
+    "tuncrypt":0,
+    "sndwnd":128,
+    "rcvwnd":1024,
+    "mtu":1450,
+    "mode":"fast"
+}
+EOF
     chmod 400 ${str_program_dir}/config.json
     rm -f ${str_program_dir}/kcp-server
     if [ "${Is_64bit}" == 'y' ] ; then
