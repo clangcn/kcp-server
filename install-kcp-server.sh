@@ -7,7 +7,7 @@ export PATH
 #   Author: Clang <admin@clangcn.com>
 #   Intro:  http://clang.cn
 #===============================================================================================
-version="1.0"
+version="1.1"
 str_program_dir="/usr/local/kcp-server"
 program_x64_download_url=https://github.com/clangcn/kcp-server/raw/master/latest/kcp_server
 program_x86_download_url=https://github.com/clangcn/kcp-server/raw/master/latest/kcp_server_386
