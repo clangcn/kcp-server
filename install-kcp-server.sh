@@ -308,7 +308,7 @@ EOF
 cat > ${str_program_dir}/client.json<<-EOF
 {
     "server":"${defIP}",
-    "server_port":"${serverport}",
+    "server_port":${serverport},
     "password":"${serverpwd}",
     "socks5_port":1080,
     "redir_port":0,
