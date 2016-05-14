@@ -4,13 +4,13 @@ export PATH
 #===============================================================================================
 #   System Required:  CentOS Debian or Ubuntu (32bit/64bit)
 #   Description:  Install kcp-Server(XiaoBao) for CentOS Debian or Ubuntu
-#   Author: Clang <admin@clangcn.com>
-#   Intro:  http://clang.cn
+#   Author: Clang
+#   Intro:  http://koolshare.cn/forum-72-1.html
 #===============================================================================================
-version="1.0"
+version="1.1"
 str_program_dir="/usr/local/kcp-server"
-program_x64_download_url=http://home.ngrok.wang:8080/static/kcp_server
-program_x86_download_url=http://home.ngrok.wang:8080/static/kcp_server_386
+program_x64_download_url=https://github.com/clangcn/kcp-server/raw/master/latest/kcp_server
+program_x86_download_url=https://github.com/clangcn/kcp-server/raw/master/latest/kcp_server_386
 program_init_download_url=https://raw.githubusercontent.com/clangcn/kcp-server/master/kcp-server.init
 str_install_shell=https://raw.githubusercontent.com/clangcn/kcp-server/master/install-kcp-server.sh
 
@@ -18,8 +18,8 @@ function fun_clang.cn(){
     echo ""
     echo "#####################################################################"
     echo "# Install kcp-Server(XiaoBao) for CentOS Debian or Ubuntu(32/64bit)"
-    echo "# Intro: http://clang.cn"
-    echo "# Author: Clang <admin@clangcn.com>"
+    echo "# Intro: http://koolshare.cn/forum-72-1.html"
+    echo "# Author: Clang"
     echo "# Version ${version}"
     echo "#####################################################################"
     echo ""
@@ -224,7 +224,6 @@ function check_curl(){
 # ====== pre_install ======
 function pre_install_clang(){
     #config setting
-    check_net-tools
     echo " Please input your kcp-Server(XiaoBao) server_port and password"
     echo ""
     sshport=`netstat -anp |grep ssh | grep '0.0.0.0:'|cut -d: -f2| awk 'NR==1 { print $1}'`
@@ -287,8 +286,7 @@ function pre_install_clang(){
 # Config file
 cat > ${str_program_dir}/config.json<<-EOF
 {
-    "server":"0.0.0.0",
-    "socks5_port":9081,
+    "server":"${defIP}",
     "redir_port":0,
     "tuncrypt":0,
     "sndwnd":128,
@@ -297,7 +295,7 @@ cat > ${str_program_dir}/config.json<<-EOF
     "mode":"fast",
     "port_password":
     {
-        "${serverport}": "${shadowsockspwd}"
+        "${serverport}": "${serverpwd}"
     },
     "_comment":
     {
@@ -305,19 +303,32 @@ cat > ${str_program_dir}/config.json<<-EOF
     }
 }
 EOF
-
+cat > ${str_program_dir}/client.json<<-EOF
+{
+    "server":"${defIP}",
+    "server_port":${serverport},
+    "password":"${serverpwd}",
+    "socks5_port":1080,
+    "redir_port":0,
+    "tuncrypt":0,
+    "sndwnd":128,
+    "rcvwnd":1024,
+    "mtu":1450,
+    "mode":"fast"
+}
+EOF
     chmod 400 ${str_program_dir}/config.json
     rm -f ${str_program_dir}/kcp-server
     if [ "${Is_64bit}" == 'y' ] ; then
         if [ ! -s ${str_program_dir}/kcp-server ]; then
-            if ! wget ${program_x64_download_url} -O ${str_program_dir}/kcp-server; then
+            if ! wget --no-check-certificate ${program_x64_download_url} -O ${str_program_dir}/kcp-server; then
                 echo "Failed to download kcp-server file!"
                 exit 1
             fi
         fi
     else
          if [ ! -s ${str_program_dir}/kcp-server ]; then
-            if ! wget ${program_x86_download_url} -O ${str_program_dir}/kcp-server; then
+            if ! wget --no-check-certificate ${program_x86_download_url} -O ${str_program_dir}/kcp-server; then
                 echo "Failed to download kcp-server file!"
                 exit 1
             fi
@@ -382,6 +393,9 @@ function install_program_server_clang(){
     check_centosversion
     check_os_bit
     disable_selinux
+    clear
+    fun_clang.cn
+    check_net-tools
     if [ -s ${str_program_dir}/kcp-server ] && [ -s /etc/init.d/kcp-server ]; then
         echo "kcp-Server(XiaoBao) is installed!"
     else
@@ -489,14 +503,14 @@ function update_program_server_clang(){
         rm -f /usr/bin/kcp-server ${str_program_dir}/kcp-server
         if [ "${Is_64bit}" == 'y' ] ; then
             if [ ! -s ${str_program_dir}/kcp-server ]; then
-                if ! wget ${program_x64_download_url} -O ${str_program_dir}/kcp-server; then
+                if ! wget --no-check-certificate ${program_x64_download_url} -O ${str_program_dir}/kcp-server; then
                     echo "Failed to download kcp-server file!"
                     exit 1
                 fi
             fi
         else
              if [ ! -s ${str_program_dir}/kcp-server ]; then
-                if ! wget ${program_x86_download_url} -O ${str_program_dir}/kcp-server; then
+                if ! wget --no-check-certificate ${program_x86_download_url} -O ${str_program_dir}/kcp-server; then
                     echo "Failed to download kcp-server file!"
                     exit 1
                 fi

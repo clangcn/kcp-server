@@ -6,8 +6,8 @@
 #=======================================================
 #   System Required:  CentOS/Debian/Ubuntu (32bit/64bit)
 #   Description:  Manager for kcp-server, Written by Clang
-#   Author: Clang <admin@clangcn.com>
-#   Intro:  http://clang.cn
+#   Author: Clang
+#   Intro:  http://koolshare.cn/forum-72-1.html
 #=======================================================
 ### BEGIN INIT INFO
 # Provides:          kcp-server
@@ -24,12 +24,12 @@ ProgramName="kcp-server"
 ProgramPath="/usr/local/kcp-server"
 NAME=kcp-server
 BIN=${ProgramPath}/${NAME}
-CONFIGFILE=${ProgramPath}/.kcp_server_config.sh
+CONFIGFILE=${ProgramPath}/config.json
 LOGFILE=${ProgramPath}/kcp-server.log
 SCRIPTNAME=/etc/init.d/${NAME}
 PID_DIR=/var/run
 PID_FILE=$PID_DIR/kcp-server.pid
-version="1.0"
+version="1.1"
 RET_VAL=0
 
 [ -x $BIN ] || exit 0
@@ -39,17 +39,14 @@ fun_clangcn()
     echo ""
     echo "#############################################################"
     echo "#  Manager ${NAME} v${version} for CentOS/Debian/Ubuntu (32bit/64bit)"
-    echo "#  Intro: http://clang.cn"
-    echo "#"
-    echo "#  Author: Clang <admin@clangcn.com>"
-    echo "#"
+    echo "#  Intro: http://koolshare.cn/forum-72-1.html"
+    echo "#  Author: Clang"
     echo "#############################################################"
     echo ""
 }
 
-fun_check_run()
-{
-    if netstat -ntulp | grep -q ${NAME};then
+fun_check_run(){
+    if netstat -ntupl | grep -q ${NAME};then
         return 0
     else
         rm -f $PID_FILE
@@ -60,32 +57,7 @@ fun_load_config(){
     if [ ! -r ${CONFIGFILE} ]; then
         echo "config file ${CONFIGFILE} not found"
         return 1
-    else
-        [ ! -x ${CONFIGFILE} ] && chmod 500 ${CONFIGFILE}
-        . ${CONFIGFILE}
-        cd ${ProgramPath}
     fi
-}
-fun_check_port(){
-    fun_load_config
-    str_server_port=""
-    str_server_port=`netstat -ntulp | grep "\b:${server_port}\b"`
-    if [ -n "${str_server_port}" ]; then
-        [ -n "${str_server_port}" ] && str_server_port="\"${server_port}\" "
-        echo ""
-        echo "Error: Port ${str_server_port}is used,view relevant port:"
-        [ -n "${str_server_port}" ] && netstat -ntulp | grep "\b:${server_port}\b"
-        return 1
-    fi
-}
-fun_randstr(){
-  index=0
-  strRandomPass=""
-  for i in {a..z}; do arr[index]=$i; index=`expr ${index} + 1`; done
-  for i in {A..Z}; do arr[index]=$i; index=`expr ${index} + 1`; done
-  for i in {0..9}; do arr[index]=$i; index=`expr ${index} + 1`; done
-  for i in {1..16}; do strRandomPass="$strRandomPass${arr[$RANDOM%$index]}"; done
-  echo $strRandomPass
 }
 fun_start()
 {
@@ -99,11 +71,9 @@ fun_start()
         echo "${ProgramName} (pid `pidof $NAME`) already running."
         return 0
     fi
-    fun_check_port
     fun_load_config
-    echo ${BIN} -l \":${server_port}\" --key \"${server_pass}\" --mtu \"${mtu}\"
     echo -n "Starting ${ProgramName}..."
-    ${BIN} -l ":${server_port}" --key "${server_pass}" --mtu "${mtu}" > ${LOGFILE} 2>&1 &
+    ${BIN} -c ${CONFIGFILE} > ${LOGFILE} 2>&1 &
     PID=`pidof ${NAME}`
     echo $PID > $PID_FILE
     sleep 0.3
@@ -123,8 +93,7 @@ fun_stop(){
     fi
     if fun_check_run; then
         echo -n "Stoping ${ProgramName} (pid `pidof $NAME`)... "
-        # kill `pidof $NAME`
-        killall ${NAME}
+        kill `pidof $NAME`
         if [ "$?" != 0 ] ; then
             echo " failed"
             exit 1
