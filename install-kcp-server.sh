@@ -288,7 +288,7 @@ function pre_install_clang(){
 cat > ${str_program_dir}/config.json<<-EOF
 {
     "server":"${defIP}",
-    "socks5_port":9081,
+    "socks5_port":1080,
     "redir_port":0,
     "tuncrypt":0,
     "sndwnd":128,
@@ -310,7 +310,7 @@ cat > ${str_program_dir}/client.json<<-EOF
     "server":"${defIP}",
     "server_port":"${serverport}",
     "password":"${serverpwd}",
-    "socks5_port":9081,
+    "socks5_port":1080,
     "redir_port":0,
     "tuncrypt":0,
     "sndwnd":128,
