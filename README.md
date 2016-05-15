@@ -28,7 +28,7 @@ Server
 
     Usage: /etc/init.d/kcp-server {start|stop|restart|status}
 
-### 多用户配置文件
+### 多用户配置文件示例
 
     {
         "server":"0.0.0.0",
@@ -56,3 +56,17 @@ Server
         }
     }
 
+### 客户端配置文件示例
+
+    {
+        "server":"你服务器IP地址",
+        "server_port":服务器端口,
+        "password":"端口对应的密码",
+        "socks5_port":1080,
+        "redir_port":0,
+        "tuncrypt":0,
+        "sndwnd":128,
+        "rcvwnd":1024,
+        "mtu":1450,
+        "mode":"fast"
+    }
