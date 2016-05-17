@@ -7,7 +7,7 @@ export PATH
 #   Author: Clang
 #   Intro:  http://koolshare.cn/forum-72-1.html
 #===============================================================================================
-version="1.1"
+version="1.2"
 str_program_dir="/usr/local/kcp-server"
 program_x64_download_url=https://github.com/clangcn/kcp-server/raw/master/latest/kcp_server
 program_x86_download_url=https://github.com/clangcn/kcp-server/raw/master/latest/kcp_server_386
@@ -25,7 +25,7 @@ function fun_clang.cn(){
     echo ""
 }
 
-fun_set_text_color(){
+function fun_set_text_color(){
     COLOR_RED='\E[1;31m'
     COLOR_GREEN='\E[1;32m'
     COLOR_YELOW='\E[1;33m'
@@ -291,7 +291,7 @@ cat > ${str_program_dir}/config.json<<-EOF
     "tuncrypt":0,
     "sndwnd":128,
     "rcvwnd":1024,
-    "mtu":1450,
+    "mtu":1400,
     "mode":"fast",
     "port_password":
     {
@@ -313,7 +313,7 @@ cat > ${str_program_dir}/client.json<<-EOF
     "tuncrypt":0,
     "sndwnd":128,
     "rcvwnd":1024,
-    "mtu":1450,
+    "mtu":1400,
     "mode":"fast"
 }
 EOF
