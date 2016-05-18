@@ -37,7 +37,7 @@ Server
         "tuncrypt":0,
         "sndwnd":128,
         "rcvwnd":1024,
-        "mtu":1450,
+        "mtu":1400,
         "mode":"fast",
         {
             "端口1": "密码1",
@@ -67,6 +67,6 @@ Server
         "tuncrypt":0,
         "sndwnd":128,
         "rcvwnd":1024,
-        "mtu":1450,
+        "mtu":1400,
         "mode":"fast"
     }
