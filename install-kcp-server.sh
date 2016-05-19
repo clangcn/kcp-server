@@ -7,7 +7,7 @@ export PATH
 #   Author: Clang
 #   Intro:  http://koolshare.cn/forum-72-1.html
 #===============================================================================================
-version="1.2"
+version="1.3"
 str_program_dir="/usr/local/kcp-server"
 program_x64_download_url=https://github.com/clangcn/kcp-server/raw/master/latest/kcp_server
 program_x86_download_url=https://github.com/clangcn/kcp-server/raw/master/latest/kcp_server_386
@@ -227,11 +227,11 @@ function pre_install_clang(){
     echo " Please input your kcp-Server(XiaoBao) server_port and password"
     echo ""
     sshport=`netstat -anp |grep ssh | grep '0.0.0.0:'|cut -d: -f2| awk 'NR==1 { print $1}'`
-    defIP=`ifconfig  | grep 'inet addr:'| grep -v '127.0.0.' | cut -d: -f2 | awk 'NR==1 { print $1}'`
-    if [ "${defIP}" = "" ]; then
+    #defIP=`ifconfig  | grep 'inet addr:'| grep -v '127.0.0.' | cut -d: -f2 | awk 'NR==1 { print $1}'`
+    #if [ "${defIP}" = "" ]; then
         check_curl
         defIP=$(curl -s -4 ip.clang.cn)
-    fi
+    #fi
     echo -e "You VPS IP:${COLOR_GREEN}${defIP}${COLOR_END}"
     fun_input_port
     echo ""
