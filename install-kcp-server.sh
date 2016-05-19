@@ -491,13 +491,13 @@ function update_program_server_clang(){
                     update_flag="true"
                 fi
             fi
-            #if [ "${update_flag}" == 'true' ]; then
-            #    echo -e "${COLOR_GREEN}Update shell successfully !!!${COLOR_END}"
-            #    echo ""
-            #    echo -e "${COLOR_GREEN}Please Re-run${COLOR_END} ${COLOR_PINKBACK_WHITEFONT}$0 update${COLOR_END}"
-            #    echo ""
-            #    exit 1
-            #fi
+            if [ "${update_flag}" == 'true' ]; then
+                echo -e "${COLOR_GREEN}Update shell successfully !!!${COLOR_END}"
+                echo ""
+                echo -e "${COLOR_GREEN}Please Re-run${COLOR_END} ${COLOR_PINKBACK_WHITEFONT}$0 update${COLOR_END}"
+                echo ""
+                exit 1
+            fi
         fi
         [ ! -d ${str_program_dir} ] && mkdir -p ${str_program_dir}
         rm -f /usr/bin/kcp-server ${str_program_dir}/kcp-server
