@@ -7,7 +7,7 @@ export PATH
 #   Author: Clang
 #   Intro:  http://koolshare.cn/forum-72-1.html
 #===============================================================================================
-version="1.3"
+version="1.4"
 str_program_dir="/usr/local/kcp-server"
 program_x64_download_url=https://github.com/clangcn/kcp-server/raw/master/latest/kcp_server
 program_x86_download_url=https://github.com/clangcn/kcp-server/raw/master/latest/kcp_server_386
@@ -230,7 +230,7 @@ function pre_install_clang(){
     #defIP=`ifconfig  | grep 'inet addr:'| grep -v '127.0.0.' | cut -d: -f2 | awk 'NR==1 { print $1}'`
     #if [ "${defIP}" = "" ]; then
         check_curl
-        defIP=$(curl -s -4 ip.clang.cn)
+        defIP=$(curl -s -4 ip.clang.cn | sed -r 's/\r//')
     #fi
     echo -e "You VPS IP:${COLOR_GREEN}${defIP}${COLOR_END}"
     fun_input_port
