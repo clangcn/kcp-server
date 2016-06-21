@@ -39,6 +39,7 @@ Server
         "rcvwnd":1024,
         "mtu":1400,
         "mode":"fast",
+        "port_password":
         {
             "端口1": "密码1",
             "端口2": "密码2",
