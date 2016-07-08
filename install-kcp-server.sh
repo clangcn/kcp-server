@@ -7,7 +7,7 @@ export PATH
 #   Author: Clang
 #   Intro:  http://koolshare.cn/forum-72-1.html
 #===============================================================================================
-version="1.4"
+version="1.5"
 str_program_dir="/usr/local/kcp-server"
 program_x64_download_url=https://github.com/clangcn/kcp-server/raw/master/latest/kcp_server
 program_x86_download_url=https://github.com/clangcn/kcp-server/raw/master/latest/kcp_server_386
@@ -288,11 +288,11 @@ cat > ${str_program_dir}/config.json<<-EOF
 {
     "server":"${defIP}",
     "redir_port":0,
-    "tuncrypt":0,
+    "mode":"fast2",
     "sndwnd":128,
     "rcvwnd":1024,
-    "mtu":1400,
-    "mode":"fast",
+    "mtu":1350,
+    "nocomp": true,
     "port_password":
     {
         "${serverport}": "${serverpwd}"
@@ -310,11 +310,11 @@ cat > ${str_program_dir}/client.json<<-EOF
     "password":"${serverpwd}",
     "socks5_port":1080,
     "redir_port":0,
-    "tuncrypt":0,
+    "mode":"fast2",
     "sndwnd":128,
     "rcvwnd":1024,
-    "mtu":1400,
-    "mode":"fast"
+    "mtu":1350,
+    "nocomp": true
 }
 EOF
     chmod 400 ${str_program_dir}/config.json
@@ -559,3 +559,4 @@ update)
     echo "Usage: `basename $0` {install|uninstall|update|config}"
     ;;
 esac
+
