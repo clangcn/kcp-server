@@ -7,7 +7,7 @@ export PATH
 #   Author: Clang
 #   Intro:  http://koolshare.cn/forum-72-1.html
 #===============================================================================================
-version="1.5"
+version="1.6"
 str_program_dir="/usr/local/kcp-server"
 program_x64_download_url=https://github.com/clangcn/kcp-server/raw/master/latest/kcp_server
 program_x86_download_url=https://github.com/clangcn/kcp-server/raw/master/latest/kcp_server_386
@@ -373,6 +373,7 @@ EOF
     [ -s /etc/init.d/kcp-server ] && ln -s /etc/init.d/kcp-server /usr/bin/kcp-server
     /etc/init.d/kcp-server start
     ${str_program_dir}/kcp-server --version
+    strMTU=`sed -n '/'mtu'/p' ${str_program_dir}/config.json | cut -d : -f2 | cut -d , -f1`
     echo ""
     fun_clang.cn
     #install successfully
@@ -381,7 +382,7 @@ EOF
     echo -e "Your Server IP:${COLOR_GREEN}${defIP}${COLOR_END}"
     echo -e "Your Server Port:${COLOR_GREEN}${serverport}${COLOR_END}"
     echo -e "Your Password:${COLOR_GREEN}${serverpwd}${COLOR_END}"
-    echo -e "Your MTU:${COLOR_GREEN}1400${COLOR_END}"
+    echo -e "Your MTU:${COLOR_GREEN}${strMTU}${COLOR_END}"
     # echo -e "Your Local Port:${COLOR_GREEN}1080${COLOR_END}"
     echo ""
     echo -e "kcp-Server(XiaoBao) status manage: ${COLOR_PINKBACK_WHITEFONT}/etc/init.d/kcp-server${COLOR_END} {${COLOR_GREEN}start${COLOR_END}|${COLOR_PINK}stop${COLOR_END}|${COLOR_YELOW}restart${COLOR_END}}"
@@ -559,4 +560,3 @@ update)
     echo "Usage: `basename $0` {install|uninstall|update|config}"
     ;;
 esac
-
