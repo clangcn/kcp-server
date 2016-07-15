@@ -7,7 +7,7 @@ export PATH
 #   Author: Clang
 #   Intro:  http://koolshare.cn/forum-72-1.html
 #===============================================================================================
-version="1.6"
+version="1.7"
 str_program_dir="/usr/local/kcp-server"
 program_x64_download_url=https://github.com/clangcn/kcp-server/raw/master/latest/kcp_server
 program_x86_download_url=https://github.com/clangcn/kcp-server/raw/master/latest/kcp_server_386
@@ -286,13 +286,13 @@ function pre_install_clang(){
 # Config file
 cat > ${str_program_dir}/config.json<<-EOF
 {
-    "server":"${defIP}",
+    "server":"0.0.0.0",
     "redir_port":0,
     "mode":"fast2",
     "sndwnd":128,
     "rcvwnd":1024,
     "mtu":1350,
-    "nocomp": true,
+    "nocomp": false,
     "port_password":
     {
         "${serverport}": "${serverpwd}"
@@ -314,7 +314,7 @@ cat > ${str_program_dir}/client.json<<-EOF
     "sndwnd":128,
     "rcvwnd":1024,
     "mtu":1350,
-    "nocomp": true
+    "nocomp": false
 }
 EOF
     chmod 400 ${str_program_dir}/config.json
