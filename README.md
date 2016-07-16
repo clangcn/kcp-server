@@ -31,13 +31,12 @@ Server
 
     {
         "server":"0.0.0.0",
-        "socks5_port":9081,
         "redir_port":0,
-        "tuncrypt":0,
         "sndwnd":128,
         "rcvwnd":1024,
-        "mtu":1400,
-        "mode":"fast",
+        "mtu":1350,
+        "mode":"fast2",
+        "nocomp": false,
         "port_password":
         {
             "端口1": "密码1",
@@ -64,9 +63,9 @@ Server
         "password":"端口对应的密码",
         "socks5_port":1080,
         "redir_port":0,
-        "tuncrypt":0,
+        "mode":"fast2"
         "sndwnd":128,
         "rcvwnd":1024,
-        "mtu":1400,
-        "mode":"fast"
+        "mtu":1350,
+        "nocomp": false
     }
