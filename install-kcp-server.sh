@@ -3,21 +3,23 @@ PATH=/bin:/sbin:/usr/bin:/usr/sbin:/usr/local/bin:/usr/local/sbin:~/bin
 export PATH
 #===============================================================================================
 #   System Required:  CentOS Debian or Ubuntu (32bit/64bit)
-#   Description:  Install kcp-Server(XiaoBao) for CentOS Debian or Ubuntu
+#   Description:  Install kcp-Server for CentOS Debian or Ubuntu
 #   Author: Clang
 #   Intro:  http://koolshare.cn/forum-72-1.html
 #===============================================================================================
-version="1.7"
+version="1.8"
 str_program_dir="/usr/local/kcp-server"
-program_x64_download_url=https://github.com/clangcn/kcp-server/raw/master/latest/kcp_server
-program_x86_download_url=https://github.com/clangcn/kcp-server/raw/master/latest/kcp_server_386
+program_download_url=https://raw.githubusercontent.com/clangcn/kcp-server/master/latest/
+x64_file=server_linux_amd64
+x86_file=server_linux_386
+md5sum_file=md5sum.md
 program_init_download_url=https://raw.githubusercontent.com/clangcn/kcp-server/master/kcp-server.init
 str_install_shell=https://raw.githubusercontent.com/clangcn/kcp-server/master/install-kcp-server.sh
 
 function fun_clang.cn(){
     echo ""
     echo "#####################################################################"
-    echo "# Install kcp-Server(XiaoBao) for CentOS Debian or Ubuntu(32/64bit)"
+    echo "# Install kcp-Server for CentOS Debian or Ubuntu(32/64bit)"
     echo "# Intro: http://koolshare.cn/forum-72-1.html"
     echo "# Author: Clang"
     echo "# Version ${version}"
@@ -153,7 +155,7 @@ function fun_randstr(){
 }
 # ====== check packs ======
 function check_nano(){
-    nano -V
+    nano -V >/dev/null
     if [[ $? -le 1 ]] ;then
         echo " Run nano success"
     else
@@ -170,7 +172,7 @@ function check_nano(){
     echo $result
 }
 function check_net-tools(){
-    netstat -V
+    netstat -V >/dev/null
     if [[ $? -le 6 ]] ;then
         echo " Run net-tools success"
     else
@@ -186,8 +188,17 @@ function check_net-tools(){
     fi
     echo $result
 }
+function check_md5sum(){
+    md5sum --version >/dev/null
+    if [[ $? -le 6 ]] ;then
+        echo " Run md5sum success"
+    else
+        echo " Run md5sum failed"
+    fi
+    echo $result
+}
 function check_iptables(){
-    iptables -V
+    iptables -V >/dev/null
     if [[ $? -le 1 ]] ;then
         echo " Run iptables success"
     else
@@ -204,7 +215,7 @@ function check_iptables(){
     echo $result
 }
 function check_curl(){
-    curl -V
+    curl -V >/dev/null
     if [[ $? -le 1 ]] ;then
         echo " Run curl success"
     else
@@ -220,11 +231,39 @@ function check_curl(){
     fi
     echo $result
 }
-
+function fun_download_file(){
+    program_file=""
+    if [ "${Is_64bit}" == 'y' ] ; then
+        program_file=${x64_file}
+        if [ ! -s ${str_program_dir}/kcp-server ]; then
+            if ! wget --no-check-certificate ${program_download_url}${program_file} -O ${str_program_dir}/kcp-server; then
+                echo "Failed to download kcp-server file!"
+                exit 1
+            fi
+        fi
+    else
+        program_file=${x86_file}
+        if [ ! -s ${str_program_dir}/kcp-server ]; then
+            if ! wget --no-check-certificate ${program_download_url}${program_file} -O ${str_program_dir}/kcp-server; then
+                echo "Failed to download kcp-server file!"
+                exit 1
+            fi
+        fi
+    fi
+    check_curl
+    check_md5sum
+    md5_web=`curl -s ${program_download_url}${md5sum_file} | sed  -n '/${program_file}/p' | awk '{print $1}'`
+    local_md5=`md5sum ${str_program_dir}/kcp-server | awk '{print $1}'`
+    if [ "${local_md5}" != "${md5_web}" ]; then
+        echo "md5sum not match,Failed to download kcp-server file!"
+        exit 1
+    fi
+    [ ! -x ${str_program_dir}/kcp-server ] && chmod 755 ${str_program_dir}/kcp-server
+}
 # ====== pre_install ======
 function pre_install_clang(){
     #config setting
-    echo " Please input your kcp-Server(XiaoBao) server_port and password"
+    echo " Please input your kcp-Server server_port and password"
     echo ""
     sshport=`netstat -anp |grep ssh | grep '0.0.0.0:'|cut -d: -f2| awk 'NR==1 { print $1}'`
     #defIP=`ifconfig  | grep 'inet addr:'| grep -v '127.0.0.' | cut -d: -f2 | awk 'NR==1 { print $1}'`
@@ -319,22 +358,7 @@ cat > ${str_program_dir}/client.json<<-EOF
 EOF
     chmod 400 ${str_program_dir}/config.json
     rm -f ${str_program_dir}/kcp-server
-    if [ "${Is_64bit}" == 'y' ] ; then
-        if [ ! -s ${str_program_dir}/kcp-server ]; then
-            if ! wget --no-check-certificate ${program_x64_download_url} -O ${str_program_dir}/kcp-server; then
-                echo "Failed to download kcp-server file!"
-                exit 1
-            fi
-        fi
-    else
-         if [ ! -s ${str_program_dir}/kcp-server ]; then
-            if ! wget --no-check-certificate ${program_x86_download_url} -O ${str_program_dir}/kcp-server; then
-                echo "Failed to download kcp-server file!"
-                exit 1
-            fi
-        fi
-    fi
-    [ ! -x ${str_program_dir}/kcp-server ] && chmod 755 ${str_program_dir}/kcp-server
+    fun_download_file
     if [ ! -s /etc/init.d/kcp-server ]; then
         if ! wget --no-check-certificate ${program_init_download_url} -O /etc/init.d/kcp-server; then
             echo "Failed to download kcp-server.init file!"
@@ -378,14 +402,14 @@ EOF
     fun_clang.cn
     #install successfully
     echo ""
-    echo "Congratulations, kcp-Server(XiaoBao) install completed!"
+    echo "Congratulations, kcp-Server install completed!"
     echo -e "Your Server IP:${COLOR_GREEN}${defIP}${COLOR_END}"
     echo -e "Your Server Port:${COLOR_GREEN}${serverport}${COLOR_END}"
     echo -e "Your Password:${COLOR_GREEN}${serverpwd}${COLOR_END}"
     echo -e "Your MTU:${COLOR_GREEN}${strMTU}${COLOR_END}"
     # echo -e "Your Local Port:${COLOR_GREEN}1080${COLOR_END}"
     echo ""
-    echo -e "kcp-Server(XiaoBao) status manage: ${COLOR_PINKBACK_WHITEFONT}/etc/init.d/kcp-server${COLOR_END} {${COLOR_GREEN}start${COLOR_END}|${COLOR_PINK}stop${COLOR_END}|${COLOR_YELOW}restart${COLOR_END}}"
+    echo -e "kcp-Server status manage: ${COLOR_PINKBACK_WHITEFONT}/etc/init.d/kcp-server${COLOR_END} {${COLOR_GREEN}start${COLOR_END}|${COLOR_PINK}stop${COLOR_END}|${COLOR_YELOW}restart${COLOR_END}}"
 }
 ############################### install function ##################################
 function install_program_server_clang(){
@@ -398,7 +422,7 @@ function install_program_server_clang(){
     fun_clang.cn
     check_net-tools
     if [ -s ${str_program_dir}/kcp-server ] && [ -s /etc/init.d/kcp-server ]; then
-        echo "kcp-Server(XiaoBao) is installed!"
+        echo "kcp-Server is installed!"
     else
         pre_install_clang
     fi
@@ -409,14 +433,14 @@ function configure_program_server_clang(){
     if [ -s ${str_program_dir}/config.json ]; then
         nano ${str_program_dir}/config.json
     else
-        echo "kcp-Server(XiaoBao) configuration file not found!"
+        echo "kcp-Server configuration file not found!"
     fi
 }
 ############################### uninstall function ##################################
 function uninstall_program_server_clang(){
     fun_clang.cn
     if [ -s /etc/init.d/kcp-server ] || [ -s ${str_program_dir}/kcp-server ] ; then
-        echo "============== Uninstall kcp-Server(XiaoBao) =============="
+        echo "============== Uninstall kcp-Server =============="
         save_config="n"
         echo  -e "${COLOR_YELOW}Do you want to keep the configuration file?${COLOR_END}"
         read -p "(if you want please input: y,Default [no]):" save_config
@@ -450,9 +474,9 @@ function uninstall_program_server_clang(){
         else
             rm -f ${str_program_dir}/kcp-server ${str_program_dir}/kcp-server.log
         fi
-        echo "kcp-Server(XiaoBao) uninstall success!"
+        echo "kcp-Server uninstall success!"
     else
-        echo "kcp-Server(XiaoBao) Not install!"
+        echo "kcp-Server Not install!"
     fi
     echo ""
 }
@@ -461,7 +485,7 @@ function update_program_server_clang(){
     fun_clang.cn
     check_curl
     if [ -s /etc/init.d/kcp-server ] || [ -s ${str_program_dir}/kcp-server ] ; then
-        echo "============== Update kcp-Server(XiaoBao) =============="
+        echo "============== Update kcp-Server =============="
         checkos
         check_centosversion
         check_os_bit
@@ -473,7 +497,7 @@ function update_program_server_clang(){
         if [ ! -z ${remote_shell_version} ] || [ ! -z ${remote_init_version} ];then
             update_flag="false"
             if [[ "${version}" < "${remote_shell_version}" ]];then
-                echo "========== Update kcp-Server(XiaoBao) install-kcp-server.sh =========="
+                echo "========== Update kcp-Server install-kcp-server.sh =========="
                 if ! wget --no-check-certificate ${str_install_shell} -O ${install_shell}/install-kcp-server.sh; then
                     echo "Failed to download install-kcp-server.sh file!"
                     exit 1
@@ -483,7 +507,7 @@ function update_program_server_clang(){
                 fi
             fi
             if [[ "${local_init_version}" < "${remote_init_version}" ]];then
-                echo "========== Update kcp-Server(XiaoBao) /etc/init.d/kcp-server =========="
+                echo "========== Update kcp-Server /etc/init.d/kcp-server =========="
                 if ! wget --no-check-certificate ${program_init_download_url} -O /etc/init.d/kcp-server; then
                     echo "Failed to download kcp-server.init file!"
                     exit 1
@@ -502,22 +526,7 @@ function update_program_server_clang(){
         fi
         [ ! -d ${str_program_dir} ] && mkdir -p ${str_program_dir}
         rm -f /usr/bin/kcp-server ${str_program_dir}/kcp-server
-        if [ "${Is_64bit}" == 'y' ] ; then
-            if [ ! -s ${str_program_dir}/kcp-server ]; then
-                if ! wget --no-check-certificate ${program_x64_download_url} -O ${str_program_dir}/kcp-server; then
-                    echo "Failed to download kcp-server file!"
-                    exit 1
-                fi
-            fi
-        else
-             if [ ! -s ${str_program_dir}/kcp-server ]; then
-                if ! wget --no-check-certificate ${program_x86_download_url} -O ${str_program_dir}/kcp-server; then
-                    echo "Failed to download kcp-server file!"
-                    exit 1
-                fi
-            fi
-        fi
-        [ ! -x ${str_program_dir}/kcp-server ] && chmod 755 ${str_program_dir}/kcp-server
+        fun_download_file
         if [ "${OS}" == 'CentOS' ]; then
             chmod +x /etc/init.d/kcp-server
             chkconfig --add kcp-server
@@ -528,9 +537,9 @@ function update_program_server_clang(){
         [ -s /etc/init.d/kcp-server ] && ln -s /etc/init.d/kcp-server /usr/bin/kcp-server
         /etc/init.d/kcp-server start
         ${str_program_dir}/kcp-server -version
-        echo "kcp-Server(XiaoBao) update success!"
+        echo "kcp-Server update success!"
     else
-        echo "kcp-Server(XiaoBao) Not install!"
+        echo "kcp-Server Not install!"
     fi
     echo ""
 }
