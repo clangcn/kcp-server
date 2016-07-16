@@ -252,7 +252,7 @@ function fun_download_file(){
     fi
     check_curl
     check_md5sum
-    md5_web=`curl -s ${program_download_url}${md5sum_file} | sed  -n '/${program_file}/p' | awk '{print $1}'`
+    md5_web=`curl -s ${program_download_url}${md5sum_file} | sed  -n "/${program_file}/p" | awk '{print $1}'`
     local_md5=`md5sum ${str_program_dir}/kcp-server | awk '{print $1}'`
     if [ "${local_md5}" != "${md5_web}" ]; then
         echo "md5sum not match,Failed to download kcp-server file!"
