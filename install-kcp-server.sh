@@ -263,8 +263,6 @@ function fun_download_file(){
 # ====== pre_install ======
 function pre_install_clang(){
     #config setting
-    echo " Please input your kcp-Server server_port and password"
-    echo ""
     sshport=`netstat -anp |grep ssh | grep '0.0.0.0:'|cut -d: -f2| awk 'NR==1 { print $1}'`
     #defIP=`ifconfig  | grep 'inet addr:'| grep -v '127.0.0.' | cut -d: -f2 | awk 'NR==1 { print $1}'`
     #if [ "${defIP}" = "" ]; then
@@ -272,6 +270,8 @@ function pre_install_clang(){
         defIP=$(curl -s -4 ip.clang.cn | sed -r 's/\r//')
     #fi
     echo -e "You VPS IP:${COLOR_GREEN}${defIP}${COLOR_END}"
+    echo " Please input your kcp-Server server_port and password"
+    echo ""
     fun_input_port
     echo ""
     server_pwd=`fun_randstr`
