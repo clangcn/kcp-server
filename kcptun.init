@@ -169,16 +169,19 @@ fun_config(){
         echo "${ProgramName} configuration file not found!"
     fi
 }
+fun_version(){
+    ${BIN} --version
+}
 
 arg1=$1
 [  -z ${arg1} ]
 case "${arg1}" in
-    start|stop|restart|status|config)
+    start|stop|restart|status|config|version)
         fun_${arg1}
     ;;
     *)
         fun_clangcn
-        echo "Usage: $SCRIPTNAME {start|stop|restart|status|config}"
+        echo "Usage: $SCRIPTNAME {start|stop|restart|status|config|version}"
         RET_VAL=1
     ;;
 esac
