@@ -63,7 +63,7 @@ Server
         "password":"端口对应的密码",
         "socks5_port":1080,
         "redir_port":0,
-        "mode":"fast2"
+        "mode":"fast2",
         "sndwnd":128,
         "rcvwnd":1024,
         "mtu":1350,
