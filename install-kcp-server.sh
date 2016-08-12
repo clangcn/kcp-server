@@ -157,9 +157,7 @@ function fun_randstr(){
 # ====== check packs ======
 function check_nano(){
     nano -V >/dev/null
-    if [[ $? -le 1 ]] ;then
-        echo " Run nano success"
-    else
+    if [[ $? -gt 1 ]] ;then
         echo " Run nano failed"
         if [ "${OS}" == 'CentOS' ]; then
             echo " Install centos nano ..."
@@ -174,9 +172,7 @@ function check_nano(){
 }
 function check_net-tools(){
     netstat -V >/dev/null
-    if [[ $? -le 6 ]] ;then
-        echo " Run net-tools success"
-    else
+    if [[ $? -gt 6 ]] ;then
         echo " Run net-tools failed"
         if [ "${OS}" == 'CentOS' ]; then
             echo " Install centos net-tools ..."
@@ -191,18 +187,14 @@ function check_net-tools(){
 }
 function check_md5sum(){
     md5sum --version >/dev/null
-    if [[ $? -le 6 ]] ;then
-        echo " Run md5sum success"
-    else
+    if [[ $? -gt 6 ]] ;then
         echo " Run md5sum failed"
     fi
     echo $result
 }
 function check_iptables(){
     iptables -V >/dev/null
-    if [[ $? -le 1 ]] ;then
-        echo " Run iptables success"
-    else
+    if [[ $? -gt 1 ]] ;then
         echo " Run iptables failed"
         if [ "${OS}" == 'CentOS' ]; then
             echo " Install centos iptables ..."
@@ -217,9 +209,7 @@ function check_iptables(){
 }
 function check_curl(){
     curl -V >/dev/null
-    if [[ $? -le 1 ]] ;then
-        echo " Run curl success"
-    else
+    if [[ $? -gt 1 ]] ;then
         echo " Run curl failed"
         if [ "${OS}" == 'CentOS' ]; then
             echo " Install centos curl ..."
