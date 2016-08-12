@@ -7,7 +7,7 @@ export PATH
 #   Author: Clang
 #   Intro:  http://koolshare.cn/forum-72-1.html
 #===============================================================================================
-version="1.1"
+version="1.2"
 str_program_dir="/usr/local/kcptun"
 program_download_url=https://github.com/xtaci/kcptun/releases/download/
 program_init_download_url=https://raw.githubusercontent.com/clangcn/kcp-server/master/kcptun.init
@@ -300,14 +300,22 @@ function pre_install_clang(){
     echo ""
     echo "##### Please select crypt mode #####"
     echo "1: aes"
-    echo "2: none"
+    echo "2: tea"
+    echo "3: xor"
+    echo "4: none"
     echo "#####################################################"
-    read -p "Enter your choice (1, 2 or exit. default [1]): " strcrypt
+    read -p "Enter your choice (1, 2, 3, 4 or exit. default [1]): " strcrypt
     case "${strcrypt}" in
         1|[aA][eE][sS])
             strcrypt="aes"
             ;;
-        2|[nN][oO][nN][eE])
+        2|[tT][eE][aA])
+            strcrypt="tea"
+            ;;
+        3|[xX][oO][rR])
+            strcrypt="xor"
+            ;;
+        4|[nN][oO][nN][eE])
             strcrypt="none"
             ;;
         [eE][xX][iI][tT])
@@ -323,15 +331,21 @@ function pre_install_clang(){
     echo "1: fast"
     echo "2: fast2"
     echo "3: fast3"
-    echo "4: none"
+    echo "4: normal"
     echo "#####################################################"
     read -p "Enter your choice (1, 2, 3, 4 or exit. default [2]): " strmode
     case "${strmode}" in
-        1|[aA][eE][sS])
-            strmode="aes"
+        1|[fF][aA][sS][tT])
+            strmode="fast"
             ;;
-        2|[nN][oO][nN][eE])
-            strmode="none"
+        2|[fF][aA][sS][tT]2)
+            strmode="fast2"
+            ;;
+        3|[fF][aA][sS][tT]3)
+            strmode="fast3"
+            ;;
+        4|[nN][oO][rR][mM][aA][lL])
+            strmode="normal"
             ;;
         [eE][xX][iI][tT])
             exit 1
