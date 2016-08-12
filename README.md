@@ -34,7 +34,7 @@ Server
     {
         "server":"0.0.0.0",
         "redir_port":0,
-        "sndwnd":128,
+        "sndwnd":1024,
         "rcvwnd":1024,
         "mtu":1350,
         "mode":"fast2",
