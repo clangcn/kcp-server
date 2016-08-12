@@ -29,7 +29,7 @@ LOGFILE=${ProgramPath}/kcptun.log
 SCRIPTNAME=/etc/init.d/${NAME}
 PID_DIR=/var/run
 PID_FILE=$PID_DIR/kcptun.pid
-version="1.1"
+version="1.2"
 RET_VAL=0
 
 [ -x $BIN ] || exit 0
@@ -82,6 +82,7 @@ fun_start()
         *)
         nocomp=""
         esac
+    ${BIN} -v
     echo -n "Starting ${ProgramName}..."
     ${BIN} -l :${listen_port} -t ${redirect_addr_port} --crypt ${crypt} --mtu ${mtu} --sndwnd ${sndwnd} --rcvwnd ${rcvwnd} --mode ${mode}${nocomp} > ${LOGFILE} 2>&1 &
     PID=`pidof ${NAME}`
@@ -186,4 +187,3 @@ case "${arg1}" in
     ;;
 esac
 exit $RET_VAL
-
