@@ -344,10 +344,10 @@ function pre_install_clang(){
     fun_input_mtu
     read -p "Please enable compression input Y, Disable compression input n,Default [yes]):" strcompression
     case "${strcompression}" in
-    1|[yY][eE][sS]|[tT][rR][uU][eE]|[eE][nN][aA][bB][lL][eE])
+    1|[yY]|[yY][eE][sS]|[tT][rR][uU][eE]|[eE][nN][aA][bB][lL][eE])
         strcompression="enable"
     ;;
-    0|[nN][oO]|[fF][aA][lL][sS][eE]|[dD][iI][sS][aA][bB][lL][eE])
+    0|[nN]|[nN][oO]|[fF][aA][lL][sS][eE]|[dD][iI][sS][aA][bB][lL][eE])
         strcompression="disable"
     ;;
     *)
@@ -360,11 +360,11 @@ function pre_install_clang(){
         read -p "(if you want please input: y,Default [no]):" set_iptables
 
         case "${set_iptables}" in
-        [yY][eE][sS])
+        [yY]|[yY][eE][sS])
         echo "You will set iptables!"
         set_iptables="y"
         ;;
-        [nN][oO])
+        [nN]|[nN][oO])
         echo "You will NOT set iptables!"
         set_iptables="n"
         ;;
@@ -500,12 +500,12 @@ function uninstall_program_server_clang(){
         read -p "(if you want please input: y,Default [no]):" save_config
 
         case "${save_config}" in
-        [yY][eE][sS])
+        [yY]|[yY][eE][sS])
         echo ""
         echo "You will keep the configuration file!"
         save_config="y"
         ;;
-        [nN][oO])
+        [nN]|[nN][oO])
         echo ""
         echo "You will NOT to keep the configuration file!"
         save_config="n"
@@ -626,4 +626,3 @@ update)
     echo "Usage: `basename $0` {install|uninstall|update|config}"
     ;;
 esac
-
