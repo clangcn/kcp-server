@@ -76,7 +76,7 @@ fun_start()
     fi
     fun_load_config
     case "${compression}" in
-        0|[nN][oO]|[fF][aA][lL][sS][eE]|[dD][iI][sS][aA][bB][lL][eE])
+        0|[nN]|[nN][oO]|[fF][aA][lL][sS][eE]|[dD][iI][sS][aA][bB][lL][eE])
         nocomp=" --nocomp"
         ;;
         *)
