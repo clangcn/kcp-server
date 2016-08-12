@@ -1,13 +1,13 @@
 #! /bin/bash
 PATH=/bin:/sbin:/usr/bin:/usr/sbin:/usr/local/bin:/usr/local/sbin:~/bin
 export PATH
-#===============================================================================================
+#======================================================================
 #   System Required:  CentOS Debian or Ubuntu (32bit/64bit)
-#   Description:  Install kcp-Server for CentOS Debian or Ubuntu
+#   Description:  A tool to auto-compile & install kcp-Server on Linux
 #   Author: Clang
 #   Intro:  http://koolshare.cn/forum-72-1.html
-#===============================================================================================
-version="1.8"
+#======================================================================
+version="1.9"
 str_program_dir="/usr/local/kcp-server"
 program_download_url=https://raw.githubusercontent.com/clangcn/kcp-server/master/latest/
 x64_file=server_linux_amd64
@@ -18,12 +18,13 @@ str_install_shell=https://raw.githubusercontent.com/clangcn/kcp-server/master/in
 
 function fun_clang.cn(){
     echo ""
-    echo "#####################################################################"
-    echo "# Install kcp-Server for CentOS Debian or Ubuntu(32/64bit)"
-    echo "# Intro: http://koolshare.cn/forum-72-1.html"
-    echo "# Author: Clang"
-    echo "# Version ${version}"
-    echo "#####################################################################"
+    echo "+-----------------------------------------------------------+"
+    echo "|       kcp-Server for Linux Server, Written by Clang       |"
+    echo "+-----------------------------------------------------------+"
+    echo "|   A tool to auto-compile & install kcp-Server on Linux    |"
+    echo "+-----------------------------------------------------------+"
+    echo "|        Intro: http://koolshare.cn/forum-72-1.html         |"
+    echo "+-----------------------------------------------------------+"
     echo ""
 }
 
@@ -328,7 +329,7 @@ cat > ${str_program_dir}/config.json<<-EOF
     "server":"0.0.0.0",
     "redir_port":0,
     "mode":"fast2",
-    "sndwnd":128,
+    "sndwnd":1024,
     "rcvwnd":1024,
     "mtu":1350,
     "nocomp": false,
@@ -569,3 +570,4 @@ update)
     echo "Usage: `basename $0` {install|uninstall|update|config}"
     ;;
 esac
+

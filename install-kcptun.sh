@@ -3,11 +3,11 @@ PATH=/bin:/sbin:/usr/bin:/usr/sbin:/usr/local/bin:/usr/local/sbin:~/bin
 export PATH
 #===============================================================================================
 #   System Required:  CentOS Debian or Ubuntu (32bit/64bit)
-#   Description:  Install kcptun for CentOS Debian or Ubuntu
+#   Description:  A tool to auto-compile & install kcptun on Linux
 #   Author: Clang
 #   Intro:  http://koolshare.cn/forum-72-1.html
 #===============================================================================================
-version="1.0"
+version="1.1"
 str_program_dir="/usr/local/kcptun"
 program_download_url=https://github.com/xtaci/kcptun/releases/download/
 program_init_download_url=https://raw.githubusercontent.com/clangcn/kcp-server/master/kcptun.init
@@ -15,12 +15,13 @@ str_install_shell=https://raw.githubusercontent.com/clangcn/kcp-server/master/in
 
 function fun_clang.cn(){
     echo ""
-    echo "#####################################################################"
-    echo "# Install kcptun for CentOS Debian or Ubuntu(32/64bit)"
-    echo "# Intro: http://koolshare.cn/forum-72-1.html"
-    echo "# Author: Clang"
-    echo "# Version ${version}"
-    echo "#####################################################################"
+    echo "+-------------------------------------------------------+"
+    echo "|       kcptun for Linux Server, Written by Clang       |"
+    echo "+-------------------------------------------------------+"
+    echo "|   A tool to auto-compile & install kcptun on Linux    |"
+    echo "+-------------------------------------------------------+"
+    echo "|       Intro: http://koolshare.cn/forum-72-1.html      |"
+    echo "+-------------------------------------------------------+"
     echo ""
 }
 
@@ -398,7 +399,7 @@ listen_port="${serverport}"
 redirect_addr_port="${redirect_addr_port}"
 crypt="${strcrypt}"
 mtu="${strInputMTU}"
-sndwnd="128"
+sndwnd="1024"
 rcvwnd="1024"
 mode="${strmode}"
 compression=${strcompression}
@@ -450,6 +451,7 @@ EOF
     . ${str_program_dir}/.kcptun-config.sh
     echo ""
     echo "Congratulations, kcptun install completed!"
+    echo "=============================================="
     echo -e "Your Server IP:${COLOR_GREEN}${defIP}${COLOR_END}"
     echo -e "Server Port:${COLOR_GREEN}${listen_port}${COLOR_END}"
     echo -e "redirect IPAddr and port:${COLOR_GREEN}${redirect_addr_port}${COLOR_END}"
@@ -624,3 +626,4 @@ update)
     echo "Usage: `basename $0` {install|uninstall|update|config}"
     ;;
 esac
+
