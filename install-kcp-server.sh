@@ -286,11 +286,11 @@ function pre_install_clang(){
         read -p "(if you want please input: y,Default [no]):" set_iptables
 
         case "${set_iptables}" in
-        y|Y|Yes|YES|yes|yES|yEs|YeS|yeS)
+        [yY]|[yY][eE][sS])
         echo "You will set iptables!"
         set_iptables="y"
         ;;
-        n|N|No|NO|no|nO)
+        [nN]|[nN][oO])
         echo "You will NOT set iptables!"
         set_iptables="n"
         ;;
@@ -447,12 +447,12 @@ function uninstall_program_server_clang(){
         read -p "(if you want please input: y,Default [no]):" save_config
 
         case "${save_config}" in
-        y|Y|Yes|YES|yes|yES|yEs|YeS|yeS)
+        [yY]|[yY][eE][sS])
         echo ""
         echo "You will keep the configuration file!"
         save_config="y"
         ;;
-        n|N|No|NO|no|nO)
+        [nN]|[nN][oO])
         echo ""
         echo "You will NOT to keep the configuration file!"
         save_config="n"
@@ -570,4 +570,3 @@ update)
     echo "Usage: `basename $0` {install|uninstall|update|config}"
     ;;
 esac
-
