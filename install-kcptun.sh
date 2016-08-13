@@ -225,7 +225,7 @@ function check_curl(){
     echo $result
 }
 function check_killall(){
-    killall -V >/dev/null
+    killall -V 2>/dev/null
     if [[ $? -gt 1 ]] ;then
         echo " Run killall failed"
         if [ "${OS}" == 'CentOS' ]; then
