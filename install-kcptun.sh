@@ -7,7 +7,7 @@ export PATH
 #   Author: Clang
 #   Intro:  http://koolshare.cn/forum-72-1.html
 #===============================================================================================
-version="1.2"
+version="1.3"
 str_program_dir="/usr/local/kcptun"
 program_download_url=https://github.com/xtaci/kcptun/releases/download/
 program_init_download_url=https://raw.githubusercontent.com/clangcn/kcp-server/master/kcptun.init
@@ -90,10 +90,13 @@ function centosversion(){
 
 # Check OS bit
 function check_os_bit(){
+    ARCHS=""
     if [[ `getconf WORD_BIT` = '32' && `getconf LONG_BIT` = '64' ]] ; then
         Is_64bit='y'
+        ARCHS="amd64"
     else
         Is_64bit='n'
+        ARCHS="386"
     fi
 }
 
@@ -250,24 +253,14 @@ function fun_getVer(){
     echo "=================================================="
     echo -e "You want download version to ${COLOR_GREEN}${kcptun_version}${COLOR_END}"
     echo "=================================================="
+    echo -e "${COLOR_YELOW}Press any key to start...or Press Ctrl+c to cancel${COLOR_END}"
+    char=`get_char`
 }
 function fun_download_file(){
-    ARCHS=""
-    if [ "${Is_64bit}" == 'y' ] ; then
-        ARCHS="amd64"
-        if [ ! -s ${str_program_dir}/kcptun ]; then
-            if ! wget --no-check-certificate ${program_download_url}v${kcptun_version}/kcptun-linux-${ARCHS}-${kcptun_version}.tar.gz; then
-                echo "Failed to download kcptun file!"
-                exit 1
-            fi
-        fi
-    else
-        ARCHS="386"
-        if [ ! -s ${str_program_dir}/kcptun ]; then
-            if ! wget --no-check-certificate ${program_download_url}v${kcptun_version}/kcptun-linux-${ARCHS}-${kcptun_version}.tar.gz; then
-                echo "Failed to download kcptun file!"
-                exit 1
-            fi
+    if [ ! -s ${str_program_dir}/kcptun ]; then
+        if ! wget --no-check-certificate ${program_download_url}v${kcptun_version}/kcptun-linux-${ARCHS}-${kcptun_version}.tar.gz; then
+            echo "Failed to download kcptun-linux-${ARCHS}-${kcptun_version}.tar.gz file!"
+            exit 1
         fi
     fi
     tar xzvf kcptun-linux-${ARCHS}-${kcptun_version}.tar.gz
