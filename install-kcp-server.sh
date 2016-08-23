@@ -515,20 +515,22 @@ function update_program_server_clang(){
                 exit 1
             fi
         fi
-        [ ! -d ${str_program_dir} ] && mkdir -p ${str_program_dir}
-        rm -f /usr/bin/kcp-server ${str_program_dir}/kcp-server
-        fun_download_file
-        if [ "${OS}" == 'CentOS' ]; then
-            chmod +x /etc/init.d/kcp-server
-            chkconfig --add kcp-server
-        else
-            chmod +x /etc/init.d/kcp-server
-            update-rc.d -f kcp-server defaults
+        if [ "${update_flag}" == 'false' ]; then
+            [ ! -d ${str_program_dir} ] && mkdir -p ${str_program_dir}
+            rm -f /usr/bin/kcp-server ${str_program_dir}/kcp-server
+            fun_download_file
+            if [ "${OS}" == 'CentOS' ]; then
+                chmod +x /etc/init.d/kcp-server
+                chkconfig --add kcp-server
+            else
+                chmod +x /etc/init.d/kcp-server
+                update-rc.d -f kcp-server defaults
+            fi
+            [ -s /etc/init.d/kcp-server ] && ln -s /etc/init.d/kcp-server /usr/bin/kcp-server
+            /etc/init.d/kcp-server start
+            ${str_program_dir}/kcp-server -version
+            echo "kcp-Server update success!"
         fi
-        [ -s /etc/init.d/kcp-server ] && ln -s /etc/init.d/kcp-server /usr/bin/kcp-server
-        /etc/init.d/kcp-server start
-        ${str_program_dir}/kcp-server -version
-        echo "kcp-Server update success!"
     else
         echo "kcp-Server Not install!"
     fi
