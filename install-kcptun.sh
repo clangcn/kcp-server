@@ -625,24 +625,26 @@ function update_program_server_clang(){
                 exit 1
             fi
         fi
-        [ ! -d ${str_program_dir} ] && mkdir -p ${str_program_dir}
-        rm -f /usr/bin/kcptun ${str_program_dir}/kcptun
-        fun_getVer
-        check_killall
-        killall kcptun
-        sleep 1
-        fun_download_file
-        if [ "${OS}" == 'CentOS' ]; then
-            chmod +x /etc/init.d/kcptun
-            chkconfig --add kcptun
-        else
-            chmod +x /etc/init.d/kcptun
-            update-rc.d -f kcptun defaults
+        if [ "${update_flag}" == 'false' ]; then
+            [ ! -d ${str_program_dir} ] && mkdir -p ${str_program_dir}
+            rm -f /usr/bin/kcptun ${str_program_dir}/kcptun
+            fun_getVer
+            check_killall
+            killall kcptun
+            sleep 1
+            fun_download_file
+            if [ "${OS}" == 'CentOS' ]; then
+                chmod +x /etc/init.d/kcptun
+                chkconfig --add kcptun
+            else
+                chmod +x /etc/init.d/kcptun
+                update-rc.d -f kcptun defaults
+            fi
+            [ -s /etc/init.d/kcptun ] && ln -s /etc/init.d/kcptun /usr/bin/kcptun
+            /etc/init.d/kcptun start
+            ${str_program_dir}/kcptun -version
+            echo "kcptun update success!"
         fi
-        [ -s /etc/init.d/kcptun ] && ln -s /etc/init.d/kcptun /usr/bin/kcptun
-        /etc/init.d/kcptun start
-        ${str_program_dir}/kcptun -version
-        echo "kcptun update success!"
     else
         echo "kcptun Not install!"
     fi
