@@ -185,6 +185,21 @@ function check_net-tools(){
     fi
     echo $result
 }
+function check_killall(){
+    killall -V 2>/dev/null
+    if [[ $? -gt 1 ]] ;then
+        echo " Run killall failed"
+        if [ "${OS}" == 'CentOS' ]; then
+            echo " Install centos killall ..."
+            yum -y install psmisc
+        else
+            echo " Install debian/ubuntu killall ..."
+            apt-get update -y
+            apt-get install -y psmisc
+        fi
+    fi
+    echo $result
+}
 function check_md5sum(){
     md5sum --version >/dev/null
     if [[ $? -gt 6 ]] ;then
@@ -480,7 +495,6 @@ function update_program_server_clang(){
         checkos
         check_centosversion
         check_os_bit
-        killall kcp-server
         remote_shell_version=`curl -s ${str_install_shell} | sed -n '/'^version'/p' | cut -d\" -f2`
         remote_init_version=`curl -s ${program_init_download_url} | sed -n '/'^version'/p' | cut -d\" -f2`
         local_init_version=`sed -n '/'^version'/p' /etc/init.d/kcp-server | cut -d\" -f2`
@@ -517,6 +531,8 @@ function update_program_server_clang(){
         fi
         if [ "${update_flag}" == 'false' ]; then
             [ ! -d ${str_program_dir} ] && mkdir -p ${str_program_dir}
+            check_killall
+            killall kcp-server
             rm -f /usr/bin/kcp-server ${str_program_dir}/kcp-server
             fun_download_file
             if [ "${OS}" == 'CentOS' ]; then
