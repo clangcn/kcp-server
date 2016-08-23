@@ -7,7 +7,7 @@ export PATH
 #   Author: Clang
 #   Intro:  http://koolshare.cn/forum-72-1.html
 #===============================================================================================
-version="1.3"
+version="1.4"
 str_program_dir="/usr/local/kcptun"
 program_download_url=https://github.com/xtaci/kcptun/releases/download/
 program_init_download_url=https://raw.githubusercontent.com/clangcn/kcp-server/master/kcptun.init
@@ -245,7 +245,7 @@ function check_killall(){
 function fun_getVer(){
     kcptun_version=""
     echo "You can get version number from https://github.com/xtaci/kcptun/releases"
-    read -p "(Please input kcptun Version you want[e.g.: 20160808]):" kcptun_version
+    read -p "(Please input kcptun Version you want[e.g.: 20160820]):" kcptun_version
     if [ "${kcptun_version}" = "" ]; then
         echo "Error: You must input kcptun_version version!!"
         exit 1
@@ -292,23 +292,55 @@ function pre_install_clang(){
     echo "shadow5ocks ip and port ${redirect_addr_port}"
     echo ""
     echo "##### Please select crypt mode #####"
-    echo "1: aes"
-    echo "2: tea"
-    echo "3: xor"
-    echo "4: none"
+    echo " 1: aes"
+    echo " 2: aes-128"
+    echo " 3: aes-192"
+    echo " 4: salsa20"
+    echo " 5: blowfish"
+    echo " 6: twofish"
+    echo " 7: cast5"
+    echo " 8: 3des"
+    echo " 9: tea"
+    echo "10: xtea"
+    echo "11: xor"
+    echo " n: none"
     echo "#####################################################"
-    read -p "Enter your choice (1, 2, 3, 4 or exit. default [1]): " strcrypt
+    read -p "Enter your choice (1, 2, 3, …… or exit. default [1]): " strcrypt
     case "${strcrypt}" in
         1|[aA][eE][sS])
             strcrypt="aes"
             ;;
-        2|[tT][eE][aA])
+        2|[aA][eE][sS]-128)
+            strcrypt="aes-128"
+            ;;
+        3|[aA][eE][sS]-192)
+            strcrypt="aes-192"
+            ;;
+        4|[sS][aA][lL][sS][aA]20)
+            strcrypt="salsa20"
+            ;;
+        5|[bB][lL][oO][wW][fF][iI][sS][hH])
+            strcrypt="blowfish"
+            ;;
+        6|[tT][wW][oO][fF][iI][sS][hH])
+            strcrypt="twofish"
+            ;;
+        7|[cC][aA][sS][tT]5)
+            strcrypt="cast5"
+            ;;
+        8|3[dD][eE][sS])
+            strcrypt="3des"
+            ;;
+        9|[tT][eE][aA])
             strcrypt="tea"
             ;;
-        3|[xX][oO][rR])
+        10|[xX][tT][eE][aA])
+            strcrypt="xtea"
+            ;;
+        11|[xX][oO][rR])
             strcrypt="xor"
             ;;
-        4|[nN][oO][nN][eE])
+        12|[nN]|[nN][oO][nN][eE])
             strcrypt="none"
             ;;
         [eE][xX][iI][tT])
@@ -456,6 +488,13 @@ EOF
     fun_clang.cn
     #install successfully
     . ${str_program_dir}/.kcptun-config.sh
+    case "${compression}" in
+        0|[nN]|[nN][oO]|[fF][aA][lL][sS][eE]|[dD][iI][sS][aA][bB][lL][eE])
+        nocomp=" --nocomp"
+        ;;
+        *)
+        nocomp=""
+        esac
     echo ""
     echo "Congratulations, kcptun install completed!"
     echo "=============================================="
@@ -468,6 +507,8 @@ EOF
     echo -e "MTU setting :${COLOR_GREEN}${mtu}${COLOR_END}"
     echo -e "sndwnd setting :${COLOR_GREEN}${sndwnd}${COLOR_END}"
     echo -e "rcvwnd setting :${COLOR_GREEN}${rcvwnd}${COLOR_END}"
+    echo "=============================================="
+    echo -e "Your Phone client config:${COLOR_GREEN}--crypt ${strcrypt} --mtu ${mtu} --sndwnd ${rcvwnd} --rcvwnd ${sndwnd} --mode ${strmode}${nocomp}${COLOR_END}"
     echo "=============================================="
     echo ""
     echo -e "kcptun status manage: ${COLOR_PINKBACK_WHITEFONT}/etc/init.d/kcptun${COLOR_END} {${COLOR_GREEN}start${COLOR_END}|${COLOR_PINK}stop${COLOR_END}|${COLOR_YELOW}restart${COLOR_END}}"
