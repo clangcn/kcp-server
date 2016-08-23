@@ -487,16 +487,6 @@ function update_program_server_clang(){
         install_shell=${strPath}
         if [ ! -z ${remote_shell_version} ] || [ ! -z ${remote_init_version} ];then
             update_flag="false"
-            if [[ "${version}" < "${remote_shell_version}" ]];then
-                echo "========== Update kcp-Server install-kcp-server.sh =========="
-                if ! wget --no-check-certificate ${str_install_shell} -O ${install_shell}/install-kcp-server.sh; then
-                    echo "Failed to download install-kcp-server.sh file!"
-                    exit 1
-                else
-                    echo -e "${COLOR_GREEN}install-kcp-server.sh Update successfully !!!${COLOR_END}"
-                    update_flag="true"
-                fi
-            fi
             if [[ "${local_init_version}" < "${remote_init_version}" ]];then
                 echo "========== Update kcp-Server /etc/init.d/kcp-server =========="
                 if ! wget --no-check-certificate ${program_init_download_url} -O /etc/init.d/kcp-server; then
@@ -504,6 +494,16 @@ function update_program_server_clang(){
                     exit 1
                 else
                     echo -e "${COLOR_GREEN}/etc/init.d/kcp-server Update successfully !!!${COLOR_END}"
+                    update_flag="true"
+                fi
+            fi
+            if [[ "${version}" < "${remote_shell_version}" ]];then
+                echo "========== Update kcp-Server install-kcp-server.sh =========="
+                if ! wget --no-check-certificate ${str_install_shell} -O ${install_shell}/$0; then
+                    echo "Failed to download install-kcp-server.sh file!"
+                    exit 1
+                else
+                    echo -e "${COLOR_GREEN}install-kcp-server.sh Update successfully !!!${COLOR_END}"
                     update_flag="true"
                 fi
             fi
