@@ -485,8 +485,8 @@ function update_program_server_clang(){
         remote_init_version=`curl -s ${program_init_download_url} | sed -n '/'^version'/p' | cut -d\" -f2`
         local_init_version=`sed -n '/'^version'/p' /etc/init.d/kcp-server | cut -d\" -f2`
         install_shell=${strPath}
+        update_flag="false"
         if [ ! -z ${remote_shell_version} ] || [ ! -z ${remote_init_version} ];then
-            update_flag="false"
             if [[ "${local_init_version}" < "${remote_init_version}" ]];then
                 echo "========== Update kcp-Server /etc/init.d/kcp-server =========="
                 if ! wget --no-check-certificate ${program_init_download_url} -O /etc/init.d/kcp-server; then
