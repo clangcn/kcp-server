@@ -97,14 +97,15 @@ fun_start()
         return 0
     fi
     fun_load_config
+    if [ "${log_flag}" == 'log' ]; then
+        strLog="${SOCKS5LOGFILE}"
+    else
+        strLog="/dev/null"
+    fi
     if [ "${runEnv}" == 'socks5' ]; then
         echo -n "Starting ${Socks5Name}..."
         socks5_port=`sed -n '/target/p' ${CONFIGFILE} | sed 's/[[:space:]]*//g;s/,//g;s/\"//g' | cut -d: -f3`
-        if [ "${log_flag}" == 'log' ]; then
-            ${SOCKS5BIN} 0.0.0.0:${socks5_port} > ${SOCKS5LOGFILE} 2>&1 &
-        else
-            ${SOCKS5BIN} 0.0.0.0:${socks5_port} >/dev/null 2>&1 &
-        fi
+        ${SOCKS5BIN} 0.0.0.0:${socks5_port} > ${strLog} 2>&1 &
         socks5PID=`pidof ${Socks5Name}`
         echo ${socks5PID} > ${PID_FILE_SOCKS5}
         sleep 0.3
@@ -115,11 +116,7 @@ fun_start()
         echo " done"
     fi
     echo -n "Starting ${ProgramName}..."
-    if [ "${log_flag}" == 'log' ]; then
-        ${BIN} -c ${CONFIGFILE} > ${LOGFILE} 2>&1 &
-    else
-        ${BIN} -c ${CONFIGFILE} >/dev/null 2>&1 &
-    fi
+    ${BIN} -c ${CONFIGFILE} > ${strLog} 2>&1 &
     PID=`pidof ${NAME}`
     echo $PID > $PID_FILE
     sleep 0.3
@@ -240,4 +237,3 @@ case "${arg1}" in
     ;;
 esac
 exit $RET_VAL
-
