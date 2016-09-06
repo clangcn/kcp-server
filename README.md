@@ -8,23 +8,29 @@ kcptun是kcp协议的一个简单应用，可以用于任意tcp网络程序的�
 
 脚本是业余爱好，英文属于文盲，写的不好，不要笑话我，欢迎您批评指正。
 安装平台：CentOS、Debian、Ubuntu。
+
+## 注意：安装脚本2.0版本之前的请卸载后重新安装！！！
+
 Server
 ------
 
 ### Install
 
-    wget --no-check-certificate https://github.com/clangcn/kcp-server/raw/master/install-kcp-server.sh -O ./install-kcp-server.sh
-    chmod 500 ./install-kcp-server.sh
-    ./install-kcp-server.sh install
+```Bash
+wget --no-check-certificate https://github.com/clangcn/kcp-server/raw/master/install-kcp-server.sh -O ./install-kcp-server.sh
+chmod 500 ./install-kcp-server.sh
+./install-kcp-server.sh install
+```
 
 ### UnInstall
-
+```Bash
     ./install-kcp-server.sh uninstall
-
+```
 ### Update
-
+```Bash
     ./install-kcp-server.sh update
-
+```
 ### 服务器管理
-
+```Bash
     Usage: /etc/init.d/kcp-server {start|stop|restart|status}
+```
