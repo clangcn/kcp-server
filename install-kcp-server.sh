@@ -562,8 +562,8 @@ EOF
     if [ "$set_iptables" == 'y' ]; then
         check_iptables
         # iptables config
-        iptables -I INPUT -p udp --dport ${${set_kcptun_port}} -j ACCEPT
-        iptables -I INPUT -p tcp --dport ${${set_socks5_port}} -j ACCEPT
+        iptables -I INPUT -p udp --dport ${set_kcptun_port} -j ACCEPT
+        iptables -I INPUT -p tcp --dport ${set_socks5_port} -j ACCEPT
         iptables -I INPUT -m state --state ESTABLISHED,RELATED -j ACCEPT
         if [ "${OS}" == 'CentOS' ]; then
             service iptables save
