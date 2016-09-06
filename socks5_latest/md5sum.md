@@ -1,0 +1,8 @@
+c1d623aaac6ef41f9771ceafc64d776f  socks5_darwin_386
+841d03974bc8f44de9fcda0f3c124295  socks5_darwin_amd64
+193b4881bf6a05398337af1f6e62e4ec  socks5_freebsd_386
+6c22171fee6a9b43cab7a8ae7052fac9  socks5_freebsd_amd64
+dcb094c0e664cea65fb360a41e4371d2  socks5_linux_386
+bcc6dcca96cafeb586b47037e6dea630  socks5_linux_amd64
+b7e0fa3a00c3e5bb42148096bce49780  socks5_windows_386.exe
+10ad1a3203597fad923e052458462fef  socks5_windows_amd64.exe

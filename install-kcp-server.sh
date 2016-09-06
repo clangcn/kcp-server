@@ -1,30 +1,34 @@
 #! /bin/bash
 PATH=/bin:/sbin:/usr/bin:/usr/sbin:/usr/local/bin:/usr/local/sbin:~/bin
 export PATH
-#======================================================================
+#===============================================================================================
 #   System Required:  CentOS Debian or Ubuntu (32bit/64bit)
-#   Description:  A tool to auto-compile & install kcp-Server on Linux
+#   Description:  A tool to auto-compile & install kcptun-server on Linux
 #   Author: Clang
 #   Intro:  http://koolshare.cn/forum-72-1.html
-#======================================================================
-version="1.9"
+#===============================================================================================
+version="2.0"
 str_program_dir="/usr/local/kcp-server"
-program_download_url=https://raw.githubusercontent.com/clangcn/kcp-server/master/latest/
-x64_file=server_linux_amd64
-x86_file=server_linux_386
-md5sum_file=md5sum.md
-program_init_download_url=https://raw.githubusercontent.com/clangcn/kcp-server/master/kcp-server.init
-str_install_shell=https://raw.githubusercontent.com/clangcn/kcp-server/master/install-kcp-server.sh
+kcptun_latest="https://github.com/xtaci/kcptun/releases/latest"
+program_name="kcp-server"
+kcp_init="/etc/init.d/${program_name}"
+program_config_file="server-kcptun.json"
+program_download_url="https://github.com/xtaci/kcptun/releases/download"
+program_socks5_download="https://raw.githubusercontent.com/clangcn/kcptun-server/master/socks5_latest"
+program_socks5_filename="socks5"
+socks_md5sum_file=md5sum.md
+program_init_download_url=https://raw.githubusercontent.com/clangcn/kcptun-server/master/install-kcptun-server.sh
+str_install_shell=https://raw.githubusercontent.com/clangcn/kcp-server/socks5/install-kcptun-server.sh
 
 function fun_clang.cn(){
     echo ""
-    echo "+-----------------------------------------------------------+"
-    echo "|       kcp-Server for Linux Server, Written by Clang       |"
-    echo "+-----------------------------------------------------------+"
-    echo "|   A tool to auto-compile & install kcp-Server on Linux    |"
-    echo "+-----------------------------------------------------------+"
-    echo "|        Intro: http://koolshare.cn/forum-72-1.html         |"
-    echo "+-----------------------------------------------------------+"
+    echo "+---------------------------------------------------------+"
+    echo "|        kcptun for Linux Server, Written by Clang        |"
+    echo "+---------------------------------------------------------+"
+    echo "| A tool to auto-compile & install kcptun-server on Linux |"
+    echo "+---------------------------------------------------------+"
+    echo "|        Intro: http://koolshare.cn/forum-72-1.html       |"
+    echo "+---------------------------------------------------------+"
     echo ""
 }
 
@@ -35,6 +39,7 @@ function fun_set_text_color(){
     COLOR_BLUE='\E[1;34m'
     COLOR_PINK='\E[1;35m'
     COLOR_PINKBACK_WHITEFONT='\033[45;37m'
+    COLOR_GREEN_LIGHTNING='\033[32m \033[05m'
     COLOR_END='\E[0m'
 }
 # Check if user is root
@@ -93,10 +98,13 @@ function centosversion(){
 
 # Check OS bit
 function check_os_bit(){
+    ARCHS=""
     if [[ `getconf WORD_BIT` = '32' && `getconf LONG_BIT` = '64' ]] ; then
         Is_64bit='y'
+        ARCHS="amd64"
     else
         Is_64bit='n'
+        ARCHS="386"
     fi
 }
 
@@ -117,59 +125,66 @@ function disable_selinux(){
 
 # Check port
 function fun_check_port(){
-    strServerPort="$1"
-    if [ ${strServerPort} -ge 1 ] && [ ${strServerPort} -le 65535 ]; then
-        checkServerPort=`netstat -ntulp | grep "\b:${strServerPort}\b"`
+    port_flag=""
+    strCheckPort=""
+    input_port=""
+    port_flag="$1"
+    strCheckPort="$2"
+    if [ ${strCheckPort} -ge 1 ] && [ ${strCheckPort} -le 65535 ]; then
+        checkServerPort=`netstat -ntulp | grep "\b:${strCheckPort}\b"`
         if [ -n "${checkServerPort}" ]; then
             echo ""
-            echo -e "${COLOR_RED}Error:${COLOR_END} Port ${COLOR_GREEN}${strServerPort}${COLOR_END} is ${COLOR_PINK}used${COLOR_END},view relevant port:"
-            netstat -ntulp | grep "\b:${strServerPort}\b"
-            fun_input_port
+            echo -e "${COLOR_RED}Error:${COLOR_END} Port ${COLOR_GREEN}${strCheckPort}${COLOR_END} is ${COLOR_PINK}used${COLOR_END},view relevant port:"
+            netstat -ntulp | grep "\b:${strCheckPort}\b"
+            fun_input_${port_flag}_port
         else
-            serverport="${strServerPort}"
+            input_port="${strCheckPort}"
         fi
     else
         echo "Input error! Please input correct numbers."
-        fun_input_port
+        fun_input_${port_flag}_port
     fi
 }
 
 # input port
-function fun_input_port(){
-    server_port="8989"
+function fun_input_kcptun_port(){
+    def_server_port="45678"
     echo ""
-    echo -e "Please input Server Port [1-65535](Don't the same SSH Port ${COLOR_RED}${sshport}${COLOR_END})"
-    read -p "(Default Server Port: ${server_port}):" serverport
-    [ -z "${serverport}" ] && serverport="${server_port}"
-    fun_check_port "${serverport}"
+    echo -n -e "Please input ${COLOR_GREEN}Kcptun${COLOR_END} Port [1-65535]"
+    read -p "(Default Server Port: ${def_server_port}):" serverport
+    [ -z "${serverport}" ] && serverport="${def_server_port}"
+    fun_check_port "kcptun" "${serverport}"
+}
+# input port
+function fun_input_socks5_port(){
+    def_socks5_port="12948"
+    #echo ""
+    #echo -e "Please input Server Socks5 Port [1-65535](Don't the same SSH Port ${COLOR_RED}${sshport}${COLOR_END})"
+    #read -p "(Default Server Port: ${def_socks5_port}):" socks5_port
+    #[ -z "${socks5_port}" ] && socks5_port="${def_socks5_port}"
+    #fun_check_port "socks5" "${socks5_port}"
+}
+# Check mtu
+function fun_check_mtu(){
+    strInputMTU="$1"
+    if [ ${strInputMTU} -ge 900 ] && [ ${strInputMTU} -le 1400 ]; then
+        strInputMTU="${strInputMTU}"
+        echo "mtu ${strInputMTU}"
+    else
+        echo "Input error! Please input correct numbers."
+        fun_input_mtu
+    fi
 }
 
-# Random password
-function fun_randstr(){
-  index=0
-  strRandomPass=""
-  for i in {a..z}; do arr[index]=$i; index=`expr ${index} + 1`; done
-  for i in {A..Z}; do arr[index]=$i; index=`expr ${index} + 1`; done
-  for i in {0..9}; do arr[index]=$i; index=`expr ${index} + 1`; done
-  for i in {1..16}; do strRandomPass="$strRandomPass${arr[$RANDOM%$index]}"; done
-  echo $strRandomPass
+# input port
+function fun_input_mtu(){
+    def_mtu="1350"
+    echo ""
+    read -p "Please input mtu [900-1400],(Default mtu: ${def_mtu}):" strMTU
+    [ -z "${strMTU}" ] && strMTU="${def_mtu}"
+    fun_check_mtu "${strMTU}"
 }
 # ====== check packs ======
-function check_nano(){
-    nano -V >/dev/null
-    if [[ $? -gt 1 ]] ;then
-        echo " Run nano failed"
-        if [ "${OS}" == 'CentOS' ]; then
-            echo " Install centos nano ..."
-            yum -y install nano
-        else
-            echo " Install debian/ubuntu nano ..."
-            apt-get update -y
-            apt-get install -y nano
-        fi
-    fi
-    echo $result
-}
 function check_net-tools(){
     netstat -V >/dev/null
     if [[ $? -gt 6 ]] ;then
@@ -182,28 +197,6 @@ function check_net-tools(){
             apt-get update -y
             apt-get install -y net-tools
         fi
-    fi
-    echo $result
-}
-function check_killall(){
-    killall -V 2>/dev/null
-    if [[ $? -gt 1 ]] ;then
-        echo " Run killall failed"
-        if [ "${OS}" == 'CentOS' ]; then
-            echo " Install centos killall ..."
-            yum -y install psmisc
-        else
-            echo " Install debian/ubuntu killall ..."
-            apt-get update -y
-            apt-get install -y psmisc
-        fi
-    fi
-    echo $result
-}
-function check_md5sum(){
-    md5sum --version >/dev/null
-    if [[ $? -gt 6 ]] ;then
-        echo " Run md5sum failed"
     fi
     echo $result
 }
@@ -237,54 +230,231 @@ function check_curl(){
     fi
     echo $result
 }
-function fun_download_file(){
-    program_file=""
-    if [ "${Is_64bit}" == 'y' ] ; then
-        program_file=${x64_file}
-        if [ ! -s ${str_program_dir}/kcp-server ]; then
-            if ! wget --no-check-certificate ${program_download_url}${program_file} -O ${str_program_dir}/kcp-server; then
-                echo "Failed to download kcp-server file!"
-                exit 1
-            fi
-        fi
-    else
-        program_file=${x86_file}
-        if [ ! -s ${str_program_dir}/kcp-server ]; then
-            if ! wget --no-check-certificate ${program_download_url}${program_file} -O ${str_program_dir}/kcp-server; then
-                echo "Failed to download kcp-server file!"
-                exit 1
-            fi
-        fi
+function check_md5sum(){
+    md5sum --version >/dev/null
+    if [[ $? -gt 6 ]] ;then
+        echo " Run md5sum failed"
     fi
-    check_curl
-    check_md5sum
-    md5_web=`curl -s ${program_download_url}${md5sum_file} | sed  -n "/${program_file}/p" | awk '{print $1}'`
-    local_md5=`md5sum ${str_program_dir}/kcp-server | awk '{print $1}'`
-    if [ "${local_md5}" != "${md5_web}" ]; then
-        echo "md5sum not match,Failed to download kcp-server file!"
-        exit 1
-    fi
-    [ ! -x ${str_program_dir}/kcp-server ] && chmod 755 ${str_program_dir}/kcp-server
+    echo $result
 }
-# ====== pre_install ======
-function pre_install_clang(){
+# Random password
+function fun_randstr(){
+  index=0
+  strRandomPass=""
+  for i in {a..z}; do arr[index]=$i; index=`expr ${index} + 1`; done
+  for i in {A..Z}; do arr[index]=$i; index=`expr ${index} + 1`; done
+  for i in {0..9}; do arr[index]=$i; index=`expr ${index} + 1`; done
+  for i in {1..16}; do strRandomPass="$strRandomPass${arr[$RANDOM%$index]}"; done
+  echo $strRandomPass
+}
+function fun_getVer(){
+    kcptun_version=""
+    kcptun_latest_release=""
+    kcptun_latest_download=""
+    kcptun_latest_filename=""
+    echo -e "Loading network version for kcptun, please wait..."
+    check_curl
+    kcptun_latest_release=`curl -s ${kcptun_latest} | cut -d\" -f2`
+    kcptun_latest_download=`curl -s ${kcptun_latest} | cut -d\" -f2 | sed 's/tag/download/'`
+    kcptun_latest_filename=`curl -s ${kcptun_latest_release} | sed -n '/<strong>kcptun-linux-'${ARCHS}'/p' | cut -d">" -f2 | cut -d "<" -f1`
+    if [ -z "${kcptun_latest_filename}" ]; then
+        echo -e "${COLOR_RED}Load network version failed!!!${COLOR_END}"
+        echo "You can get version number from https://github.com/xtaci/kcptun/releases"
+        read -p "(Please input kcptun Version you want[e.g.: 20160820]):" kcptun_version
+        if [ "${kcptun_version}" = "" ]; then
+            echo "Error: You must input kcptun_version version!!"
+            exit 1
+        fi
+        echo "=================================================="
+        echo -e "You want download version to ${COLOR_GREEN}${kcptun_version}${COLOR_END}"
+        echo "=================================================="
+        echo -e "${COLOR_YELOW}Press any key to start...or Press Ctrl+c to cancel${COLOR_END}"
+        char=`get_char`
+    else
+        echo -e "Kcptun Latest release file ${COLOR_GREEN}${kcptun_latest_filename}${COLOR_END}"
+    fi
+    
+}
+function fun_download_file(){
+    # download kcptun
+    if [ ! -s ${str_program_dir}/${program_name} ]; then
+        if [ -z "${kcptun_latest_filename}" ]; then
+            if ! wget --no-check-certificate ${program_download_url}/v${kcptun_version}/kcptun-linux-${ARCHS}-${kcptun_version}.tar.gz; then
+                echo "Failed to download kcptun-linux-${ARCHS}-${kcptun_version}.tar.gz file!"
+                exit 1
+            fi
+            tar xzvf kcptun-linux-${ARCHS}-${kcptun_version}.tar.gz
+            mv server_linux_${ARCHS} ${str_program_dir}/${program_name}
+            rm -f kcptun-linux-${ARCHS}-${kcptun_version}.tar.gz client_linux_${ARCHS}
+        else
+            rm -f ${kcptun_latest_filename} server_linux_${ARCHS} client_linux_${ARCHS}
+            if ! wget --no-check-certificate ${kcptun_latest_download}/${kcptun_latest_filename}; then
+                echo "Failed to download ${kcptun_latest_filename} file!"
+                exit 1
+            fi
+            check_md5sum
+            kcptun_md5_web=`curl -s ${kcptun_latest_release} | sed -n '/MD5 (kcptun-linux-'${ARCHS}'/p' | cut -d"=" -f2 | sed s/[[:space:]]//g`
+            down_local_md5=`md5sum ${kcptun_latest_filename} | awk '{print $1}'`
+            if [ "${down_local_md5}" != "${kcptun_md5_web}" ]; then
+                echo "md5sum not match,Failed to download ${kcptun_latest_filename} file!"
+                exit 1
+            fi
+            tar xzvf ${kcptun_latest_filename}
+            mv server_linux_${ARCHS} ${str_program_dir}/${program_name}
+            rm -f ${kcptun_latest_filename} client_linux_${ARCHS}
+        fi
+    fi
+    # download socks5 proxy
+    if [ ! -s ${str_program_dir}/${program_socks5_filename} ]; then
+        if ! wget --no-check-certificate ${program_socks5_download}/socks5_linux_${ARCHS} -O ${str_program_dir}/${program_socks5_filename}; then
+            echo "Failed to download socks5_linux_${ARCHS} file!"
+            exit 1
+        fi
+        socks5_md5_web=`curl -s ${program_socks5_download}/${socks_md5sum_file} | sed  -n "/socks5_linux_${ARCHS}/p" | awk '{print $1}'`
+        socks5_local_md5=`md5sum ${str_program_dir}/${program_socks5_filename} | awk '{print $1}'`
+        if [ "${socks5_local_md5}" != "${socks5_md5_web}" ]; then
+            echo "md5sum not match,Failed to download ${program_socks5_filename} file!"
+            exit 1
+        fi
+    fi
+    chown root:root ${str_program_dir}/*
+    [ ! -x ${str_program_dir}/${program_name} ] && chmod 755 ${str_program_dir}/${program_name}
+    [ ! -x ${str_program_dir}/${program_socks5_filename} ] && chmod 755 ${str_program_dir}/${program_socks5_filename}
+}
+# ====== install kcptun server ======
+function install_program_server_clang(){
+    fun_getVer
     #config setting
-    sshport=`netstat -anp |grep ssh | grep '0.0.0.0:'|cut -d: -f2| awk 'NR==1 { print $1}'`
+    sshport=`sed -n '/^Port/p' /etc/ssh/sshd_config | awk 'NR==1 { print $2}'`
+    if [ "${sshport}" = "" ]; then
+        sshport=`netstat -anp |grep ssh | grep '0.0.0.0:'|cut -d: -f2| awk 'NR==1 { print $1}'`
+    fi
     #defIP=`ifconfig  | grep 'inet addr:'| grep -v '127.0.0.' | cut -d: -f2 | awk 'NR==1 { print $1}'`
     #if [ "${defIP}" = "" ]; then
         check_curl
         defIP=$(curl -s -4 ip.clang.cn | sed -r 's/\r//')
     #fi
     echo -e "You VPS IP:${COLOR_GREEN}${defIP}${COLOR_END}"
-    echo " Please input your kcp-Server server_port and password"
+    echo -e  "${COLOR_YELOW}Please input your server setting:${COLOR_END}"
     echo ""
-    fun_input_port
+    fun_input_kcptun_port
+    [ -n "${input_port}" ] && set_kcptun_port="${input_port}"
+    echo "kcptun port: ${set_kcptun_port}"
     echo ""
-    server_pwd=`fun_randstr`
-    read -p "Please input Password (Default Password: ${server_pwd}):" serverpwd
-    if [ "${serverpwd}" = "" ]; then
-        serverpwd="${server_pwd}"
-    fi
+    default_kcptun_pwd=`fun_randstr`
+    read -p "Please input Password (Default Password: ${default_kcptun_pwd}):" set_kcptun_pwd
+    [ -z "${set_kcptun_pwd}" ] && set_kcptun_pwd="${default_kcptun_pwd}"
+    echo "kcptun password: ${set_kcptun_pwd}"
+    echo ""
+    echo "##### Please select crypt mode #####"
+    echo " 1: aes"
+    echo " 2: aes-128"
+    echo " 3: aes-192"
+    echo " 4: salsa20"
+    echo " 5: blowfish"
+    echo " 6: twofish"
+    echo " 7: cast5"
+    echo " 8: 3des"
+    echo " 9: tea"
+    echo "10: xtea"
+    echo "11: xor"
+    echo " n: none"
+    echo "#####################################################"
+    read -p "Enter your choice (1, 2, 3, …… or exit. default [1]): " strcrypt
+    case "${strcrypt}" in
+        1|[aA][eE][sS])
+            strcrypt="aes"
+            ;;
+        2|[aA][eE][sS]-128)
+            strcrypt="aes-128"
+            ;;
+        3|[aA][eE][sS]-192)
+            strcrypt="aes-192"
+            ;;
+        4|[sS][aA][lL][sS][aA]20)
+            strcrypt="salsa20"
+            ;;
+        5|[bB][lL][oO][wW][fF][iI][sS][hH])
+            strcrypt="blowfish"
+            ;;
+        6|[tT][wW][oO][fF][iI][sS][hH])
+            strcrypt="twofish"
+            ;;
+        7|[cC][aA][sS][tT]5)
+            strcrypt="cast5"
+            ;;
+        8|3[dD][eE][sS])
+            strcrypt="3des"
+            ;;
+        9|[tT][eE][aA])
+            strcrypt="tea"
+            ;;
+        10|[xX][tT][eE][aA])
+            strcrypt="xtea"
+            ;;
+        11|[xX][oO][rR])
+            strcrypt="xor"
+            ;;
+        12|[nN]|[nN][oO][nN][eE])
+            strcrypt="none"
+            ;;
+        [eE][xX][iI][tT])
+            exit 1
+            ;;
+        *)
+            strcrypt="aes"
+            ;;
+    esac
+    echo "crypt mode: ${strcrypt}"
+    echo ""
+    echo "##### Please select fast mode #####"
+    echo "1: fast"
+    echo "2: fast2"
+    echo "3: fast3"
+    echo "4: normal"
+    echo "#####################################################"
+    read -p "Enter your choice (1, 2, 3, 4 or exit. default [2]): " strmode
+    case "${strmode}" in
+        1|[fF][aA][sS][tT])
+            strmode="fast"
+            ;;
+        2|[fF][aA][sS][tT]2)
+            strmode="fast2"
+            ;;
+        3|[fF][aA][sS][tT]3)
+            strmode="fast3"
+            ;;
+        4|[nN][oO][rR][mM][aA][lL])
+            strmode="normal"
+            ;;
+        [eE][xX][iI][tT])
+            exit 1
+            ;;
+        *)
+            strmode="fast2"
+            ;;
+    esac
+    echo "fast mode: ${strmode}"
+    fun_input_mtu
+    read -p "Please enable compression input Y, Disable compression input n,Default [yes]):" strcompression
+    case "${strcompression}" in
+    1|[yY]|[yY][eE][sS]|[tT][rR][uU][eE]|[eE][nN][aA][bB][lL][eE])
+        strcompression="enable"
+        set_kcptun_comp="false"
+    ;;
+    0|[nN]|[nN][oO]|[fF][aA][lL][sS][eE]|[dD][iI][sS][aA][bB][lL][eE])
+        strcompression="disable"
+        set_kcptun_comp="true"
+    ;;
+    *)
+        strcompression="enable"
+        set_kcptun_comp="false"
+    esac
+    echo "compression: ${strcompression}"
+    echo ""
+    fun_input_socks5_port
+    set_socks5_port="${def_socks5_port}"
+    echo "socks5 port: ${set_socks5_port}"
     echo ""
     set_iptables="n"
         echo  -e "\033[33mDo you want to set iptables?\033[0m"
@@ -306,85 +476,69 @@ function pre_install_clang(){
 
     echo ""
     echo "============== Check your input =============="
-    echo -e "Your Server IP:${COLOR_GREEN}${defIP}${COLOR_END}"
-    echo -e "Your Server Port:${COLOR_GREEN}${serverport}${COLOR_END}"
-    echo -e "Your Password:${COLOR_GREEN}${serverpwd}${COLOR_END}"
+    echo -e "Socks5 Port: ${COLOR_GREEN}${set_socks5_port}${COLOR_END}"
+    echo -e "Kcptun Port: ${COLOR_GREEN}${set_kcptun_port}${COLOR_END}"
+    echo -e "Kcptun key : ${COLOR_GREEN}${set_kcptun_pwd}${COLOR_END}"
+    echo -e "crypt mode : ${COLOR_GREEN}${strcrypt}${COLOR_END}"
+    echo -e "fast mode  : ${COLOR_GREEN}${strmode}${COLOR_END}"
+    echo -e "compression: ${COLOR_GREEN}${strcompression}${COLOR_END}"
+    echo -e "MTU        : ${COLOR_GREEN}${strInputMTU}${COLOR_END}"
     echo "=============================================="
     echo ""
     echo "Press any key to start...or Press Ctrl+c to cancel"
 
     char=`get_char`
 
-    echo "============== Install packs =============="
-    if [ "${OS}" == 'CentOS' ]; then
-        #yum -y update
-        yum -y install wget psmisc
-    else
-        apt-get update -y
-        apt-get install -y wget psmisc
-    fi
-
     [ ! -d ${str_program_dir} ] && mkdir -p ${str_program_dir}
     cd ${str_program_dir}
     echo $PWD
 
 # Config file
-cat > ${str_program_dir}/config.json<<-EOF
+cat > ${str_program_dir}/${program_config_file}<<-EOF
 {
-    "server":"0.0.0.0",
-    "redir_port":0,
-    "mode":"fast2",
-    "sndwnd":1024,
-    "rcvwnd":1024,
-    "mtu":1350,
-    "nocomp": false,
-    "port_password":
-    {
-        "${serverport}": "${serverpwd}"
-    },
-    "_comment":
-    {
-        "${serverport}": "The server port comment"
-    }
+    "listen": ":${set_kcptun_port}",
+    "target": "127.0.0.1:${set_socks5_port}",
+    "key": "${set_kcptun_pwd}",
+    "crypt": "${strcrypt}",
+    "mode": "${strmode}",
+    "mtu": ${strInputMTU},
+    "sndwnd": 1024,
+    "rcvwnd": 1024,
+    "datashard": 70,
+    "parityshard": 30,
+    "dscp": 46,
+    "nocomp": ${set_kcptun_comp},
+    "acknodelay": false,
+    "nodelay": 0,
+    "interval": 40,
+    "resend": 0,
+    "nc": 0,
+    "sockbuf": 4194304,
+    "keepalive": 10
 }
 EOF
-cat > ${str_program_dir}/client.json<<-EOF
-{
-    "server":"${defIP}",
-    "server_port":${serverport},
-    "password":"${serverpwd}",
-    "socks5_port":1080,
-    "redir_port":0,
-    "mode":"fast2",
-    "sndwnd":128,
-    "rcvwnd":1024,
-    "mtu":1350,
-    "nocomp": false
-}
-EOF
-    chmod 400 ${str_program_dir}/config.json
-    rm -f ${str_program_dir}/kcp-server
+    rm -f ${str_program_dir}/${program_name} ${str_program_dir}/${program_socks5_filename}
     fun_download_file
-    if [ ! -s /etc/init.d/kcp-server ]; then
-        if ! wget --no-check-certificate ${program_init_download_url} -O /etc/init.d/kcp-server; then
-            echo "Failed to download kcp-server.init file!"
+    if [ ! -s ${kcp_init} ]; then
+        if ! wget --no-check-certificate ${program_init_download_url} -O ${kcp_init}; then
+            echo "Failed to download kcptun.init file!"
             exit 1
         fi
     fi
-    [ ! -x /etc/init.d/kcp-server ] && chmod +x /etc/init.d/kcp-server
+    [ ! -x ${kcp_init} ] && chmod +x ${kcp_init}
     if [ "${OS}" == 'CentOS' ]; then
-        chmod +x /etc/init.d/kcp-server
-        chkconfig --add kcp-server
+        chmod +x ${kcp_init}
+        chkconfig --add ${program_name}
     else
-        chmod +x /etc/init.d/kcp-server
-        update-rc.d -f kcp-server defaults
+        chmod +x ${kcp_init}
+        update-rc.d -f ${program_name} defaults
     fi
 
     if [ "$set_iptables" == 'y' ]; then
         check_iptables
         # iptables config
-        iptables -I INPUT -p udp --dport ${serverport} -j ACCEPT
-        iptables -I INPUT -p tcp --dport ${serverport} -j ACCEPT
+        iptables -I INPUT -p udp --dport ${${set_kcptun_port}} -j ACCEPT
+        iptables -I INPUT -p tcp --dport ${${set_socks5_port}} -j ACCEPT
         iptables -I INPUT -m state --state ESTABLISHED,RELATED -j ACCEPT
         if [ "${OS}" == 'CentOS' ]; then
             service iptables save
@@ -400,25 +554,31 @@ EOF
             chmod +x /etc/network/if-pre-up.d/iptables
         fi
     fi
-    [ -s /etc/init.d/kcp-server ] && ln -s /etc/init.d/kcp-server /usr/bin/kcp-server
-    /etc/init.d/kcp-server start
-    ${str_program_dir}/kcp-server --version
-    strMTU=`sed -n '/'mtu'/p' ${str_program_dir}/config.json | cut -d : -f2 | cut -d , -f1`
-    echo ""
+    [ -s ${kcp_init} ] && ln -s ${kcp_init} /usr/bin/${program_name}
+    ${kcp_init} start
+    str_sndwnd=`sed -n '/sndwnd/p' ${str_program_dir}/server-kcptun.json | sed 's/[[:space:]]*//g;s/,//g' | cut -d: -f2`
+    str_rcvwnd=`sed -n '/rcvwnd/p' ${str_program_dir}/server-kcptun.json | sed 's/[[:space:]]*//g;s/,//g' | cut -d: -f2`
+    ${str_program_dir}/${program_name} --version
     fun_clang.cn
     #install successfully
     echo ""
-    echo "Congratulations, kcp-Server install completed!"
-    echo -e "Your Server IP:${COLOR_GREEN}${defIP}${COLOR_END}"
-    echo -e "Your Server Port:${COLOR_GREEN}${serverport}${COLOR_END}"
-    echo -e "Your Password:${COLOR_GREEN}${serverpwd}${COLOR_END}"
-    echo -e "Your MTU:${COLOR_GREEN}${strMTU}${COLOR_END}"
-    # echo -e "Your Local Port:${COLOR_GREEN}1080${COLOR_END}"
+    echo "Congratulations, kcp-server install completed!"
+    echo "=============================================="
+    echo -e "Your Server IP: ${COLOR_GREEN}${defIP}${COLOR_END}"
+    echo -e "   Server Port: ${COLOR_GREEN}${set_kcptun_port}${COLOR_END}"
+    echo -e "    Server Key: ${COLOR_GREEN}${set_kcptun_pwd}${COLOR_END}"
+    echo -e "    crypt mode: ${COLOR_GREEN}${strcrypt}${COLOR_END}"
+    echo -e "     fast mode: ${COLOR_GREEN}${strmode}${COLOR_END}"
+    echo -e "   compression: ${COLOR_GREEN}${strcompression}${COLOR_END}"
+    echo -e "           MTU: ${COLOR_GREEN}${strInputMTU}${COLOR_END}"
+    echo -e "        sndwnd: ${COLOR_GREEN}${str_sndwnd}${COLOR_END}"
+    echo -e "        rcvwnd: ${COLOR_GREEN}${str_rcvwnd}${COLOR_END}"
+    echo "=============================================="
     echo ""
-    echo -e "kcp-Server status manage: ${COLOR_PINKBACK_WHITEFONT}/etc/init.d/kcp-server${COLOR_END} {${COLOR_GREEN}start${COLOR_END}|${COLOR_PINK}stop${COLOR_END}|${COLOR_YELOW}restart${COLOR_END}}"
+    echo -e "kcptun status manage: ${COLOR_PINKBACK_WHITEFONT}${kcp_init}${COLOR_END} {${COLOR_GREEN}start${COLOR_END}|${COLOR_PINK}stop${COLOR_END}|${COLOR_YELOW}restart${COLOR_END}}"
 }
 ############################### install function ##################################
-function install_program_server_clang(){
+function pre_install_clang(){
     fun_clang.cn
     checkos
     check_centosversion
@@ -427,26 +587,25 @@ function install_program_server_clang(){
     clear
     fun_clang.cn
     check_net-tools
-    if [ -s ${str_program_dir}/kcp-server ] && [ -s /etc/init.d/kcp-server ]; then
-        echo "kcp-Server is installed!"
+    if [ -s ${str_program_dir}/${program_name} ] && [ -s ${kcp_init} ]; then
+        echo "kcptun is installed!"
     else
-        pre_install_clang
+        install_program_server_clang
     fi
 }
 ############################### configure function ##################################
 function configure_program_server_clang(){
-    check_nano
-    if [ -s ${str_program_dir}/config.json ]; then
-        nano ${str_program_dir}/config.json
+    if [ -s ${str_program_dir}/${program_config_file} ]; then
+        vi ${str_program_dir}/${program_config_file}
     else
-        echo "kcp-Server configuration file not found!"
+        echo "kcptun configuration file not found!"
     fi
 }
 ############################### uninstall function ##################################
 function uninstall_program_server_clang(){
     fun_clang.cn
-    if [ -s /etc/init.d/kcp-server ] || [ -s ${str_program_dir}/kcp-server ] ; then
-        echo "============== Uninstall kcp-Server =============="
+    if [ -s ${kcp_init} ] || [ -s ${str_program_dir}/${program_name} ] ; then
+        echo "============== Uninstall ${program_name} =============="
         save_config="n"
         echo  -e "${COLOR_YELOW}Do you want to keep the configuration file?${COLOR_END}"
         read -p "(if you want please input: y,Default [no]):" save_config
@@ -468,21 +627,21 @@ function uninstall_program_server_clang(){
         save_config="n"
         esac
         checkos
-        /etc/init.d/kcp-server stop
+        ${kcp_init} stop
         if [ "${OS}" == 'CentOS' ]; then
-            chkconfig --del kcp-server
+            chkconfig --del ${program_name}
         else
-            update-rc.d -f kcp-server remove
+            update-rc.d -f ${program_name} remove
         fi
-        rm -f /usr/bin/kcp-server /etc/init.d/kcp-server /var/run/kcp-server.pid /root/kcp-server-install.log /root/kcp-server-update.log
+        rm -f /usr/bin/${program_name} ${kcp_init} /var/run/${program_name}.pid /root/${program_name}-install.log /root/${program_name}-update.log
         if [ "${save_config}" == 'n' ]; then
             rm -fr ${str_program_dir}
         else
-            rm -f ${str_program_dir}/kcp-server ${str_program_dir}/kcp-server.log
+            rm -f ${str_program_dir}/${program_name} ${str_program_dir}/${program_name}.log
         fi
-        echo "kcp-Server uninstall success!"
+        echo "${program_name} uninstall success!"
     else
-        echo "kcp-Server Not install!"
+        echo "${program_name} Not install!"
     fi
     echo ""
 }
@@ -490,34 +649,34 @@ function uninstall_program_server_clang(){
 function update_program_server_clang(){
     fun_clang.cn
     check_curl
-    if [ -s /etc/init.d/kcp-server ] || [ -s ${str_program_dir}/kcp-server ] ; then
-        echo "============== Update kcp-Server =============="
+    if [ -s ${kcp_init} ] || [ -s ${str_program_dir}/${program_name} ] ; then
+        echo "============== Update ${program_name} =============="
         checkos
         check_centosversion
         check_os_bit
         remote_shell_version=`curl -s ${str_install_shell} | sed -n '/'^version'/p' | cut -d\" -f2`
         remote_init_version=`curl -s ${program_init_download_url} | sed -n '/'^version'/p' | cut -d\" -f2`
-        local_init_version=`sed -n '/'^version'/p' /etc/init.d/kcp-server | cut -d\" -f2`
+        local_init_version=`sed -n '/'^version'/p' ${kcp_init} | cut -d\" -f2`
         install_shell=${strPath}
         update_flag="false"
         if [ ! -z ${remote_shell_version} ] || [ ! -z ${remote_init_version} ];then
             if [[ "${local_init_version}" < "${remote_init_version}" ]];then
-                echo "========== Update kcp-Server /etc/init.d/kcp-server =========="
-                if ! wget --no-check-certificate ${program_init_download_url} -O /etc/init.d/kcp-server; then
-                    echo "Failed to download kcp-server.init file!"
+                echo "========== Update ${program_name} ${kcp_init} =========="
+                if ! wget --no-check-certificate ${program_init_download_url} -O ${kcp_init}; then
+                    echo "Failed to download ${program_name}.init file!"
                     exit 1
                 else
-                    echo -e "${COLOR_GREEN}/etc/init.d/kcp-server Update successfully !!!${COLOR_END}"
+                    echo -e "${COLOR_GREEN}${kcp_init} Update successfully !!!${COLOR_END}"
                     update_flag="true"
                 fi
             fi
             if [[ "${version}" < "${remote_shell_version}" ]];then
-                echo "========== Update kcp-Server install-kcp-server.sh =========="
+                echo "========== Update ${program_name} install-${program_name}.sh =========="
                 if ! wget --no-check-certificate ${str_install_shell} -O ${install_shell}/$0; then
-                    echo "Failed to download install-kcp-server.sh file!"
+                    echo "Failed to download install-${program_name}.sh file!"
                     exit 1
                 else
-                    echo -e "${COLOR_GREEN}install-kcp-server.sh Update successfully !!!${COLOR_END}"
+                    echo -e "${COLOR_GREEN}install-${program_name}.sh Update successfully !!!${COLOR_END}"
                     update_flag="true"
                 fi
             fi
@@ -531,24 +690,26 @@ function update_program_server_clang(){
         fi
         if [ "${update_flag}" == 'false' ]; then
             [ ! -d ${str_program_dir} ] && mkdir -p ${str_program_dir}
-            check_killall
-            killall kcp-server
-            rm -f /usr/bin/kcp-server ${str_program_dir}/kcp-server
+            fun_getVer
+            ${kcp_init} stop
+            sleep 1
+            rm -f /usr/bin/${program_name} ${str_program_dir}/${program_name} ${str_program_dir}/${program_socks5_filename}
             fun_download_file
             if [ "${OS}" == 'CentOS' ]; then
-                chmod +x /etc/init.d/kcp-server
-                chkconfig --add kcp-server
+                chmod +x ${kcp_init}
+                chkconfig --add ${program_name}
             else
-                chmod +x /etc/init.d/kcp-server
-                update-rc.d -f kcp-server defaults
+                chmod +x ${kcp_init}
+                update-rc.d -f ${program_name} defaults
             fi
-            [ -s /etc/init.d/kcp-server ] && ln -s /etc/init.d/kcp-server /usr/bin/kcp-server
-            /etc/init.d/kcp-server start
-            ${str_program_dir}/kcp-server -version
-            echo "kcp-Server update success!"
+            [ -s ${kcp_init} ] && ln -s ${kcp_init} /usr/bin/${program_name}
+            [ ! -x ${kcp_init} ] && chmod 755 ${kcp_init}
+            ${kcp_init} start
+            ${str_program_dir}/${program_name} -version
+            echo "${program_name} update success!"
         fi
     else
-        echo "kcp-Server Not install!"
+        echo "${program_name} Not install!"
     fi
     echo ""
 }
@@ -561,16 +722,16 @@ action=$1
 [  -z $1 ]
 case "$action" in
 install)
-    install_program_server_clang 2>&1 | tee /root/kcp-server-install.log
+    pre_install_clang 2>&1 | tee /root/${program_name}-install.log
     ;;
 config)
     configure_program_server_clang
     ;;
 uninstall)
-    uninstall_program_server_clang 2>&1 | tee /root/kcp-server-uninstall.log
+    uninstall_program_server_clang 2>&1 | tee /root/${program_name}-uninstall.log
     ;;
 update)
-    update_program_server_clang 2>&1 | tee /root/kcp-server-update.log
+    update_program_server_clang 2>&1 | tee /root/${program_name}-update.log
     ;;
 *)
     fun_clang.cn
@@ -578,3 +739,4 @@ update)
     echo "Usage: `basename $0` {install|uninstall|update|config}"
     ;;
 esac
+
