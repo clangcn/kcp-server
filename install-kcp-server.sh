@@ -360,7 +360,7 @@ function install_program_server_clang(){
     echo "11: xor"
     echo " n: none"
     echo "#####################################################"
-    read -p "Enter your choice (1, 2, 3, …… or exit. default [1]): " strcrypt
+    read -p "Enter your choice (1, 2, 3, ... or exit. default [1]): " strcrypt
     case "${strcrypt}" in
         1|[aA][eE][sS])
             strcrypt="aes"
