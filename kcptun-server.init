@@ -173,8 +173,13 @@ fun_stop(){
     fi
 }
 fun_restart(){
+    local restart_log_flag="$1"
     fun_stop
-    fun_start
+    if [ "${restart_log_flag}" == 'log' ]; then
+        fun_start log
+    else
+        fun_start
+    fi
 }
 fun_status(){
     if netstat -ntulp | grep -q ${NAME}; then
