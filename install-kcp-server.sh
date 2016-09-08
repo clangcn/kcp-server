@@ -7,7 +7,7 @@ export PATH
 #   Author: Clang
 #   Intro:  http://koolshare.cn/forum-72-1.html
 #===============================================================================================
-version="2.2"
+version="2.3"
 str_program_dir="/usr/local/kcp-server"
 kcptun_latest="https://github.com/xtaci/kcptun/releases/latest"
 program_name="kcp-server"
@@ -358,7 +358,6 @@ function install_program_server_clang(){
     echo " 9: tea"
     echo "10: xtea"
     echo "11: xor"
-    echo " n: none"
     echo "#####################################################"
     read -p "Enter your choice (1, 2, 3, ... or exit. default [1]): " strcrypt
     case "${strcrypt}" in
@@ -394,9 +393,6 @@ function install_program_server_clang(){
             ;;
         11|[xX][oO][rR])
             strcrypt="xor"
-            ;;
-        12|[nN]|[nN][oO][nN][eE])
-            strcrypt="none"
             ;;
         [eE][xX][iI][tT])
             exit 1
