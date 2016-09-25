@@ -7,13 +7,13 @@ export PATH
 #   Author: Clang
 #   Intro:  http://koolshare.cn/forum-72-1.html
 #===============================================================================================
-version="2.3"
+version="3.0"
 str_program_dir="/usr/local/kcp-server"
-kcptun_latest="https://github.com/xtaci/kcptun/releases/latest"
+kcptun_releases="https://api.github.com/repos/xtaci/kcptun/releases"
+kcptun_api_filename="/tmp/kcptun_api_file.txt"
 program_name="kcp-server"
 kcp_init="/etc/init.d/${program_name}"
 program_config_file="server-kcptun.json"
-program_download_url="https://github.com/xtaci/kcptun/releases/download"
 program_socks5_download="https://raw.githubusercontent.com/clangcn/kcp-server/master/socks5_latest"
 program_socks5_filename="socks5"
 socks_md5sum_file=md5sum.md
@@ -158,11 +158,6 @@ function fun_input_kcptun_port(){
 # input port
 function fun_input_socks5_port(){
     def_socks5_port="12948"
-    #echo ""
-    #echo -e "Please input Server Socks5 Port [1-65535](Don't the same SSH Port ${COLOR_RED}${sshport}${COLOR_END})"
-    #read -p "(Default Server Port: ${def_socks5_port}):" socks5_port
-    #[ -z "${socks5_port}" ] && socks5_port="${def_socks5_port}"
-    #fun_check_port "socks5" "${socks5_port}"
 }
 # Check mtu
 function fun_check_mtu(){
@@ -215,21 +210,6 @@ function check_iptables(){
     fi
     echo $result
 }
-function check_curl(){
-    curl -V >/dev/null
-    if [[ $? -gt 1 ]] ;then
-        echo " Run curl failed"
-        if [ "${OS}" == 'CentOS' ]; then
-            echo " Install centos curl ..."
-            yum -y install curl curl-devel
-        else
-            echo " Install debian/ubuntu curl ..."
-            apt-get update -y
-            apt-get install -y curl
-        fi
-    fi
-    echo $result
-}
 function check_md5sum(){
     md5sum --version >/dev/null
     if [[ $? -gt 6 ]] ;then
@@ -250,67 +230,53 @@ function fun_randstr(){
 function fun_getVer(){
     kcptun_version=""
     kcptun_latest_release=""
-    kcptun_latest_download=""
     kcptun_latest_filename=""
     echo -e "Loading network version for kcptun, please wait..."
-    check_curl
-    kcptun_latest_release=`curl -s ${kcptun_latest} | cut -d\" -f2`
-    kcptun_latest_download=`curl -s ${kcptun_latest} | cut -d\" -f2 | sed 's/tag/download/'`
-    kcptun_latest_filename=`curl -s ${kcptun_latest_release} | sed -n '/<strong>kcptun-linux-'${ARCHS}'/p' | cut -d">" -f2 | cut -d "<" -f1`
-    if [ -z "${kcptun_latest_filename}" ]; then
-        echo -e "${COLOR_RED}Load network version failed!!!${COLOR_END}"
-        echo "You can get version number from https://github.com/xtaci/kcptun/releases"
-        read -p "(Please input kcptun Version you want[e.g.: 20160820]):" kcptun_version
-        if [ "${kcptun_version}" = "" ]; then
-            echo "Error: You must input kcptun_version version!!"
-            exit 1
+    rm -f ${kcptun_api_filename}
+    wget --no-check-certificate -qO- ${kcptun_releases} > ${kcptun_api_filename}
+    if [ -s ${kcptun_api_filename} ]; then
+        kcptun_version=`cat ${kcptun_api_filename} | grep \"tag_name\" | cut -d\" -f4 | head -n 1`
+        kcptun_latest_filename=`cat ${kcptun_api_filename} | grep \"name\" | grep kcptun-linux-${ARCHS} | cut -d\" -f4 | head -n 1`
+        kcptun_latest_file_url=`cat ${kcptun_api_filename} | grep \"browser_download_url\" | grep ${kcptun_version}/kcptun-linux-${ARCHS} | cut -d\" -f4`
+        if [ -z "${kcptun_latest_file_url}" ]; then
+            echo -e "${COLOR_RED}Load network version failed!!!${COLOR_END}"
+        else
+            echo -e "Kcptun Latest release file ${COLOR_GREEN}${kcptun_latest_filename}${COLOR_END}"
         fi
-        echo "=================================================="
-        echo -e "You want download version to ${COLOR_GREEN}${kcptun_version}${COLOR_END}"
-        echo "=================================================="
-        echo -e "${COLOR_YELOW}Press any key to start...or Press Ctrl+c to cancel${COLOR_END}"
-        char=`get_char`
     else
-        echo -e "Kcptun Latest release file ${COLOR_GREEN}${kcptun_latest_filename}${COLOR_END}"
+        echo -e "${COLOR_RED}Load kcptun release file failed!!!${COLOR_END}"
     fi
     
 }
 function fun_download_file(){
     # download kcptun
     if [ ! -s ${str_program_dir}/${program_name} ]; then
-        if [ -z "${kcptun_latest_filename}" ]; then
-            if ! wget --no-check-certificate ${program_download_url}/v${kcptun_version}/kcptun-linux-${ARCHS}-${kcptun_version}.tar.gz; then
-                echo "Failed to download kcptun-linux-${ARCHS}-${kcptun_version}.tar.gz file!"
-                exit 1
-            fi
-            tar xzvf kcptun-linux-${ARCHS}-${kcptun_version}.tar.gz
-            mv server_linux_${ARCHS} ${str_program_dir}/${program_name}
-            rm -f kcptun-linux-${ARCHS}-${kcptun_version}.tar.gz client_linux_${ARCHS}
-        else
-            rm -f ${kcptun_latest_filename} server_linux_${ARCHS} client_linux_${ARCHS}
-            if ! wget --no-check-certificate ${kcptun_latest_download}/${kcptun_latest_filename}; then
-                echo "Failed to download ${kcptun_latest_filename} file!"
-                exit 1
-            fi
-            check_md5sum
-            kcptun_md5_web=`curl -s ${kcptun_latest_release} | sed -n '/MD5 (kcptun-linux-'${ARCHS}'/p' | cut -d"=" -f2 | sed s/[[:space:]]//g`
-            down_local_md5=`md5sum ${kcptun_latest_filename} | awk '{print $1}'`
-            if [ "${down_local_md5}" != "${kcptun_md5_web}" ]; then
-                echo "md5sum not match,Failed to download ${kcptun_latest_filename} file!"
-                exit 1
-            fi
-            tar xzvf ${kcptun_latest_filename}
-            mv server_linux_${ARCHS} ${str_program_dir}/${program_name}
-            rm -f ${kcptun_latest_filename} client_linux_${ARCHS}
+        rm -f ${kcptun_latest_filename} server_linux_${ARCHS} client_linux_${ARCHS}
+        if ! wget --no-check-certificate -q ${kcptun_latest_file_url}; then
+            echo "Failed to download ${kcptun_latest_filename} file!"
+            exit 1
         fi
+        check_md5sum
+        kcptun_releases_tag=`cat ${kcptun_api_filename} | grep \"html_url\" | grep ${kcptun_version} | cut -d\" -f4`
+        #kcptun_md5_web=`cat ${kcptun_api_filename} | grep \"body\" | grep ${kcptun_latest_filename} | sed 's/\\r\\n/\n/g' | sed -n '/'${kcptun_latest_filename}'/p' | cut -d"=" -f2 | sed s/[[:space:]]//g`
+        cat ${kcptun_api_filename} | grep \"body\" | grep ${kcptun_latest_filename} | sed 's/\\r\\n/\n/g' | sed -n '/'${kcptun_latest_filename}'/p' | awk '{print $4}' >/tmp/kcptun_remote_md5.txt
+        kcptun_md5_web=`cat /tmp/kcptun_remote_md5.txt`
+        down_local_md5=`md5sum ${kcptun_latest_filename} | awk '{print $1}'`
+        if [ "${down_local_md5}" != "${kcptun_md5_web}" ]; then
+            echo "md5sum not match,Failed to download ${kcptun_latest_filename} file!"
+            exit 1
+        fi
+        tar xzf ${kcptun_latest_filename}
+        mv server_linux_${ARCHS} ${str_program_dir}/${program_name}
+        rm -f ${kcptun_latest_filename} client_linux_${ARCHS} ${kcptun_api_filename} /tmp/kcptun_remote_md5.txt
     fi
     # download socks5 proxy
     if [ ! -s ${str_program_dir}/${program_socks5_filename} ]; then
-        if ! wget --no-check-certificate ${program_socks5_download}/socks5_linux_${ARCHS} -O ${str_program_dir}/${program_socks5_filename}; then
+        if ! wget --no-check-certificate -q ${program_socks5_download}/socks5_linux_${ARCHS} -O ${str_program_dir}/${program_socks5_filename}; then
             echo "Failed to download socks5_linux_${ARCHS} file!"
             exit 1
         fi
-        socks5_md5_web=`curl -s ${program_socks5_download}/${socks_md5sum_file} | sed  -n "/socks5_linux_${ARCHS}/p" | awk '{print $1}'`
+        socks5_md5_web=`wget --no-check-certificate -qO- ${program_socks5_download}/${socks_md5sum_file} | sed  -n "/socks5_linux_${ARCHS}/p" | awk '{print $1}'`
         socks5_local_md5=`md5sum ${str_program_dir}/${program_socks5_filename} | awk '{print $1}'`
         if [ "${socks5_local_md5}" != "${socks5_md5_web}" ]; then
             echo "md5sum not match,Failed to download ${program_socks5_filename} file!"
@@ -325,18 +291,10 @@ function fun_download_file(){
 function install_program_server_clang(){
     fun_getVer
     #config setting
-    sshport=`sed -n '/^Port/p' /etc/ssh/sshd_config | awk 'NR==1 { print $2}'`
-    if [ "${sshport}" = "" ]; then
-        sshport=`netstat -anp |grep ssh | grep '0.0.0.0:'|cut -d: -f2| awk 'NR==1 { print $1}'`
-    fi
-    #defIP=`ifconfig  | grep 'inet addr:'| grep -v '127.0.0.' | cut -d: -f2 | awk 'NR==1 { print $1}'`
-    #if [ "${defIP}" = "" ]; then
-        check_curl
-        defIP=$(curl -s -4 ip.clang.cn | sed -r 's/\r//')
-    #fi
+    echo -e "Loading You Server IP, please wait..."
+    defIP=$(wget -qO- ip.clang.cn | sed -r 's/\r//')
     echo -e "You VPS IP:${COLOR_GREEN}${defIP}${COLOR_END}"
     echo -e  "${COLOR_YELOW}Please input your server setting:${COLOR_END}"
-    echo ""
     fun_input_kcptun_port
     [ -n "${input_port}" ] && set_kcptun_port="${input_port}"
     echo "kcptun port: ${set_kcptun_port}"
@@ -518,13 +476,17 @@ cat > ${str_program_dir}/client.json<<-EOF
 }
 EOF
     rm -f ${str_program_dir}/${program_name} ${str_program_dir}/${program_socks5_filename}
+    echo -n "download ${program_name} & ${program_socks5_filename}..."
     fun_download_file
+    echo " done"
+    echo -n "download ${kcp_init}..."
     if [ ! -s ${kcp_init} ]; then
-        if ! wget --no-check-certificate ${program_init_download_url} -O ${kcp_init}; then
+        if ! wget --no-check-certificate -q ${program_init_download_url} -O ${kcp_init}; then
             echo "Failed to download kcptun.init file!"
             exit 1
         fi
     fi
+    echo " done"
     [ ! -x ${kcp_init} ] && chmod +x ${kcp_init}
     if [ "${OS}" == 'CentOS' ]; then
         chmod +x ${kcp_init}
@@ -575,7 +537,11 @@ EOF
     echo -e "        rcvwnd: ${COLOR_GREEN}${str_rcvwnd}${COLOR_END}"
     echo "=============================================="
     echo ""
-    echo -e "kcptun status manage: ${COLOR_PINKBACK_WHITEFONT}${kcp_init}${COLOR_END} {${COLOR_GREEN}start${COLOR_END}|${COLOR_PINK}stop${COLOR_END}|${COLOR_YELOW}restart${COLOR_END}}"
+    echo -e "kcptun status manage: ${COLOR_PINKBACK_WHITEFONT}${kcp_init}${COLOR_END} {${COLOR_GREEN}start|stop|restart|status|config|version${COLOR_END}}"
+    echo -e "Example:"
+    echo -e "  start: ${COLOR_PINK}${kcp_init}${COLOR_END} ${COLOR_GREEN}start${COLOR_END}"
+    echo -e "   stop: ${COLOR_PINK}${kcp_init}${COLOR_END} ${COLOR_GREEN}stop${COLOR_END}"
+    echo -e "restart: ${COLOR_PINK}${kcp_init}${COLOR_END} ${COLOR_GREEN}restart${COLOR_END}"
 }
 ############################### install function ##################################
 function pre_install_clang(){
@@ -648,14 +614,13 @@ function uninstall_program_server_clang(){
 ############################### update function ##################################
 function update_program_server_clang(){
     fun_clang.cn
-    check_curl
     if [ -s ${kcp_init} ] || [ -s ${str_program_dir}/${program_name} ] ; then
         echo "============== Update ${program_name} =============="
         checkos
         check_centosversion
         check_os_bit
-        remote_shell_version=`curl -s ${str_install_shell} | sed -n '/'^version'/p' | cut -d\" -f2`
-        remote_init_version=`curl -s ${program_init_download_url} | sed -n '/'^version'/p' | cut -d\" -f2`
+        remote_shell_version=`wget --no-check-certificate -qO- ${str_install_shell} | sed -n '/'^version'/p' | cut -d\" -f2`
+        remote_init_version=`wget --no-check-certificate -qO- ${program_init_download_url} | sed -n '/'^version'/p' | cut -d\" -f2`
         local_init_version=`sed -n '/'^version'/p' ${kcp_init} | cut -d\" -f2`
         install_shell=${strPath}
         update_flag="false"
@@ -739,3 +704,4 @@ update)
     echo "Usage: `basename $0` {install|uninstall|update|config}"
     ;;
 esac
+
