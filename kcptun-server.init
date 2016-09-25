@@ -34,7 +34,7 @@ SCRIPTNAME=/etc/init.d/${NAME}
 PID_DIR=/var/run
 PID_FILE=${PID_DIR}/${ProgramName}.pid
 PID_FILE_SOCKS5=${PID_DIR}/${Socks5Name}.pid
-version="2.1"
+version="2.2"
 RET_VAL=0
 
 [ -x ${BIN} ] || exit 0
@@ -76,13 +76,13 @@ fun_load_config(){
 fun_start()
 {
     log_flag="$1"
-    if [ "${arg1}" = "start" ]; then
+    if [[ "${arg1}" =~ ^[Ss][Tt][Aa][Rr][Tt]$ ]]; then
       fun_clangcn
     fi
     if [ ! -d ${PID_DIR} ]; then
         mkdir -p ${PID_DIR} || echo "failed creating PID directory ${PID_DIR}"; exit 1
     fi
-    if [ "${runEnv}" == 'socks5' ]; then
+    if [[ "${runEnv}" =~ ^[Ss][Oo][Cc][Kk][Ss]5$ ]]; then
         if fun_check_socks5_run; then
             echo "${Socks5Name} (pid `pidof $Socks5Name`) already running."
             if fun_check_run; then
@@ -97,12 +97,14 @@ fun_start()
         return 0
     fi
     fun_load_config
-    if [ "${log_flag}" == 'log' ]; then
+    if [[ "${log_flag}" =~ ^[Ll][Oo][Gg]$ ]]; then
         strLog="${SOCKS5LOGFILE}"
+        strKcpLog="${LOGFILE}"
     else
         strLog="/dev/null"
+        strKcpLog="/dev/null"
     fi
-    if [ "${runEnv}" == 'socks5' ]; then
+    if [[ "${runEnv}" =~ ^[Ss][Oo][Cc][Kk][Ss]5$ ]]; then
         echo -n "Starting ${Socks5Name}..."
         socks5_port=`sed -n '/target/p' ${CONFIGFILE} | sed 's/[[:space:]]*//g;s/,//g;s/\"//g' | cut -d: -f3`
         ${SOCKS5BIN} 127.0.0.1:${socks5_port} > ${strLog} 2>&1 &
@@ -116,7 +118,7 @@ fun_start()
         echo " done"
     fi
     echo -n "Starting ${ProgramName}..."
-    ${BIN} -c ${CONFIGFILE} > ${strLog} 2>&1 &
+    ${BIN} -c ${CONFIGFILE} > ${strKcpLog} 2>&1 &
     PID=`pidof ${NAME}`
     echo $PID > $PID_FILE
     sleep 0.3
@@ -126,21 +128,21 @@ fun_start()
     fi
     echo " done"
     ${BIN} -v
-    if [ "${runEnv}" == 'socks5' ]; then
+    if [[ "${runEnv}" =~ ^[Ss][Oo][Cc][Kk][Ss]5$ ]]; then
         echo "${Socks5Name} (pid `pidof $Socks5Name`)is running."
         if [ "${log_flag}" == 'log' ]; then
             echo "read ${SOCKS5LOGFILE} for log" 
         fi
     fi
     echo "${ProgramName} (pid `pidof $NAME`)is running."
-    if [ "${log_flag}" == 'log' ]; then
+    if [[ "${log_flag}" =~ ^[Ll][Oo][Gg]$ ]]; then
         echo "read ${LOGFILE} for log" 
     fi
     return 0
 }
 
 fun_stop(){
-    if [ "${arg1}" = "stop" ] || [ "${arg1}" = "restart" ]; then
+    if [[ "${arg1}" =~ ^[Ss][Tt][Oo][Pp]$ ]] || [[ "${arg1}" =~ ^[Rr][Ee][Ss][Tt][Aa][Rr][Tt]$ ]]; then
       fun_clangcn
     fi
     if fun_check_run; then
@@ -156,7 +158,7 @@ fun_stop(){
     else
         echo "${ProgramName} is not running."
     fi
-    if [ "${runEnv}" == 'socks5' ]; then
+    if [[ "${runEnv}" =~ ^[Ss][Oo][Cc][Kk][Ss]5$ ]]; then
         if fun_check_socks5_run; then
             echo -n "Stoping ${Socks5Name} (pid `pidof $Socks5Name`)... "
             kill `pidof $Socks5Name`
@@ -175,7 +177,7 @@ fun_stop(){
 fun_restart(){
     local restart_log_flag="$1"
     fun_stop
-    if [ "${restart_log_flag}" == 'log' ]; then
+    if [[ "${restart_log_flag}" =~ ^[Ll][Oo][Gg]$ ]]; then
         fun_start log
     else
         fun_start
@@ -191,7 +193,7 @@ fun_status(){
         exit 0
     fi
     echo ""
-    if [ "${runEnv}" == 'socks5' ]; then
+    if [[ "${runEnv}" =~ ^[Ss][Oo][Cc][Kk][Ss]5$ ]]; then
         if netstat -ntulp | grep -q ${Socks5Name}; then
             socks5PID=`pidof ${Socks5Name}`
             echo "${Socks5Name} (pid $socks5PID) is running..."
