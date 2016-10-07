@@ -7,7 +7,7 @@ export PATH
 #   Author: Clang
 #   Intro:  http://koolshare.cn/forum-72-1.html
 #===============================================================================================
-version="3.0"
+version="3.1"
 str_program_dir="/usr/local/kcp-server"
 kcptun_releases="https://api.github.com/repos/xtaci/kcptun/releases"
 kcptun_api_filename="/tmp/kcptun_api_file.txt"
@@ -246,13 +246,12 @@ function fun_getVer(){
     else
         echo -e "${COLOR_RED}Load kcptun release file failed!!!${COLOR_END}"
     fi
-    
 }
 function fun_download_file(){
     # download kcptun
     if [ ! -s ${str_program_dir}/${program_name} ]; then
         rm -f ${kcptun_latest_filename} server_linux_${ARCHS} client_linux_${ARCHS}
-        if ! wget --no-check-certificate -q ${kcptun_latest_file_url}; then
+        if ! wget --no-check-certificate -q ${kcptun_latest_file_url} -O ${kcptun_latest_filename}; then
             echo "Failed to download ${kcptun_latest_filename} file!"
             exit 1
         fi
@@ -614,45 +613,45 @@ function uninstall_program_server_clang(){
 ############################### update function ##################################
 function update_program_server_clang(){
     fun_clang.cn
-    if [ -s ${kcp_init} ] || [ -s ${str_program_dir}/${program_name} ] ; then
-        echo "============== Update ${program_name} =============="
-        checkos
-        check_centosversion
-        check_os_bit
-        remote_shell_version=`wget --no-check-certificate -qO- ${str_install_shell} | sed -n '/'^version'/p' | cut -d\" -f2`
-        remote_init_version=`wget --no-check-certificate -qO- ${program_init_download_url} | sed -n '/'^version'/p' | cut -d\" -f2`
-        local_init_version=`sed -n '/'^version'/p' ${kcp_init} | cut -d\" -f2`
-        install_shell=${strPath}
-        update_flag="false"
-        if [ ! -z ${remote_shell_version} ] || [ ! -z ${remote_init_version} ];then
-            if [[ "${local_init_version}" < "${remote_init_version}" ]];then
-                echo "========== Update ${program_name} ${kcp_init} =========="
-                if ! wget --no-check-certificate ${program_init_download_url} -O ${kcp_init}; then
-                    echo "Failed to download ${program_name}.init file!"
-                    exit 1
-                else
-                    echo -e "${COLOR_GREEN}${kcp_init} Update successfully !!!${COLOR_END}"
-                    update_flag="true"
-                fi
-            fi
-            if [[ "${version}" < "${remote_shell_version}" ]];then
-                echo "========== Update ${program_name} install-${program_name}.sh =========="
-                if ! wget --no-check-certificate ${str_install_shell} -O ${install_shell}/$0; then
-                    echo "Failed to download install-${program_name}.sh file!"
-                    exit 1
-                else
-                    echo -e "${COLOR_GREEN}install-${program_name}.sh Update successfully !!!${COLOR_END}"
-                    update_flag="true"
-                fi
-            fi
-            if [ "${update_flag}" == 'true' ]; then
-                echo -e "${COLOR_GREEN}Update shell successfully !!!${COLOR_END}"
-                echo ""
-                echo -e "${COLOR_GREEN}Please Re-run${COLOR_END} ${COLOR_PINKBACK_WHITEFONT}$0 update${COLOR_END}"
-                echo ""
+    echo "============== Update ${program_name} =============="
+    checkos
+    check_centosversion
+    check_os_bit
+    remote_shell_version=`wget --no-check-certificate -qO- ${str_install_shell} | sed -n '/'^version'/p' | cut -d\" -f2`
+    remote_init_version=`wget --no-check-certificate -qO- ${program_init_download_url} | sed -n '/'^version'/p' | cut -d\" -f2`
+    local_init_version=`sed -n '/'^version'/p' ${kcp_init} | cut -d\" -f2`
+    install_shell=${strPath}
+    update_flag="false"
+    if [ ! -z ${remote_shell_version} ] || [ ! -z ${remote_init_version} ];then
+        if [[ "${local_init_version}" < "${remote_init_version}" ]];then
+            echo "========== Update ${program_name} ${kcp_init} =========="
+            if ! wget --no-check-certificate ${program_init_download_url} -O ${kcp_init}; then
+                echo "Failed to download ${program_name}.init file!"
                 exit 1
+            else
+                echo -e "${COLOR_GREEN}${kcp_init} Update successfully !!!${COLOR_END}"
+                update_flag="true"
             fi
         fi
+        if [[ "${version}" < "${remote_shell_version}" ]];then
+            echo "========== Update ${program_name} install-${program_name}.sh =========="
+            if ! wget --no-check-certificate ${str_install_shell} -O ${install_shell}/$0; then
+                echo "Failed to download install-${program_name}.sh file!"
+                exit 1
+            else
+                echo -e "${COLOR_GREEN}install-${program_name}.sh Update successfully !!!${COLOR_END}"
+                update_flag="true"
+            fi
+        fi
+        if [ "${update_flag}" == 'true' ]; then
+            echo -e "${COLOR_GREEN}Update shell successfully !!!${COLOR_END}"
+            echo ""
+            echo -e "${COLOR_GREEN}Please Re-run${COLOR_END} ${COLOR_PINKBACK_WHITEFONT}$0 update${COLOR_END}"
+            echo ""
+            exit 1
+        fi
+    fi
+    if [ -s ${kcp_init} ] || [ -s ${str_program_dir}/${program_name} ] ; then
         if [ "${update_flag}" == 'false' ]; then
             [ ! -d ${str_program_dir} ] && mkdir -p ${str_program_dir}
             fun_getVer
@@ -704,4 +703,3 @@ update)
     echo "Usage: `basename $0` {install|uninstall|update|config}"
     ;;
 esac
-
