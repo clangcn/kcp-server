@@ -7,9 +7,9 @@ export PATH
 #   Author: Clang
 #   Intro:  http://koolshare.cn/forum-72-1.html
 #===============================================================================================
-version="3.0"
+version="3.2"
 str_program_dir="/usr/local/kcp-server"
-kcptun_releases="https://api.github.com/repos/xtaci/kcptun/releases"
+kcptun_releases="https://api.github.com/repos/xtaci/kcptun/releases/latest"
 kcptun_api_filename="/tmp/kcptun_api_file.txt"
 program_name="kcp-server"
 kcp_init="/etc/init.d/${program_name}"
@@ -20,7 +20,7 @@ socks_md5sum_file=md5sum.md
 program_init_download_url=https://raw.githubusercontent.com/clangcn/kcp-server/master/kcptun-server.init
 str_install_shell=https://raw.githubusercontent.com/clangcn/kcp-server/master/install-kcp-server.sh
 
-function fun_clang.cn(){
+function fun_clang(){
     echo ""
     echo "+---------------------------------------------------------+"
     echo "|        kcptun for Linux Server, Written by Clang        |"
@@ -45,7 +45,7 @@ function fun_set_text_color(){
 # Check if user is root
 function rootness(){
     if [[ $EUID -ne 0 ]]; then
-        fun_clang.cn
+        fun_clang
         echo "Error:This script must be run as root!" 1>&2
         exit 1
     fi
@@ -180,7 +180,7 @@ function fun_input_mtu(){
     fun_check_mtu "${strMTU}"
 }
 # ====== check packs ======
-function check_net-tools(){
+function check_net_tools(){
     netstat -V >/dev/null
     if [[ $? -gt 6 ]] ;then
         echo " Run net-tools failed"
@@ -235,8 +235,8 @@ function fun_getVer(){
     rm -f ${kcptun_api_filename}
     wget --no-check-certificate -qO- ${kcptun_releases} > ${kcptun_api_filename}
     if [ -s ${kcptun_api_filename} ]; then
-        kcptun_version=`cat ${kcptun_api_filename} | grep \"tag_name\" | cut -d\" -f4 | head -n 1`
-        kcptun_latest_filename=`cat ${kcptun_api_filename} | grep \"name\" | grep kcptun-linux-${ARCHS} | cut -d\" -f4 | head -n 1`
+        kcptun_version=`cat ${kcptun_api_filename} | grep \"tag_name\" | cut -d\" -f4`
+        kcptun_latest_filename=`cat ${kcptun_api_filename} | grep \"name\" | grep kcptun-linux-${ARCHS} | cut -d\" -f4`
         kcptun_latest_file_url=`cat ${kcptun_api_filename} | grep \"browser_download_url\" | grep ${kcptun_version}/kcptun-linux-${ARCHS} | cut -d\" -f4`
         if [ -z "${kcptun_latest_file_url}" ]; then
             echo -e "${COLOR_RED}Load network version failed!!!${COLOR_END}"
@@ -246,21 +246,17 @@ function fun_getVer(){
     else
         echo -e "${COLOR_RED}Load kcptun release file failed!!!${COLOR_END}"
     fi
-    
 }
 function fun_download_file(){
     # download kcptun
     if [ ! -s ${str_program_dir}/${program_name} ]; then
         rm -f ${kcptun_latest_filename} server_linux_${ARCHS} client_linux_${ARCHS}
-        if ! wget --no-check-certificate -q ${kcptun_latest_file_url}; then
+        if ! wget --no-check-certificate -q ${kcptun_latest_file_url} -O ${kcptun_latest_filename}; then
             echo "Failed to download ${kcptun_latest_filename} file!"
             exit 1
         fi
         check_md5sum
-        kcptun_releases_tag=`cat ${kcptun_api_filename} | grep \"html_url\" | grep ${kcptun_version} | cut -d\" -f4`
-        #kcptun_md5_web=`cat ${kcptun_api_filename} | grep \"body\" | grep ${kcptun_latest_filename} | sed 's/\\r\\n/\n/g' | sed -n '/'${kcptun_latest_filename}'/p' | cut -d"=" -f2 | sed s/[[:space:]]//g`
-        cat ${kcptun_api_filename} | grep \"body\" | grep ${kcptun_latest_filename} | sed 's/\\r\\n/\n/g' | sed -n '/'${kcptun_latest_filename}'/p' | awk '{print $4}' >/tmp/kcptun_remote_md5.txt
-        kcptun_md5_web=`cat /tmp/kcptun_remote_md5.txt`
+        kcptun_md5_web=$(cat ${kcptun_api_filename} | grep \"body\" | grep ${kcptun_latest_filename} | sed 's/\\r\\n/\n/g' | sed -n '/'${kcptun_latest_filename}'/p' | awk '{print $4}')
         down_local_md5=`md5sum ${kcptun_latest_filename} | awk '{print $1}'`
         if [ "${down_local_md5}" != "${kcptun_md5_web}" ]; then
             echo "md5sum not match,Failed to download ${kcptun_latest_filename} file!"
@@ -268,7 +264,7 @@ function fun_download_file(){
         fi
         tar xzf ${kcptun_latest_filename}
         mv server_linux_${ARCHS} ${str_program_dir}/${program_name}
-        rm -f ${kcptun_latest_filename} client_linux_${ARCHS} ${kcptun_api_filename} /tmp/kcptun_remote_md5.txt
+        rm -f ${kcptun_latest_filename} client_linux_${ARCHS} ${kcptun_api_filename}
     fi
     # download socks5 proxy
     if [ ! -s ${str_program_dir}/${program_socks5_filename} ]; then
@@ -521,7 +517,7 @@ EOF
     str_sndwnd=`sed -n '/sndwnd/p' ${str_program_dir}/server-kcptun.json | sed 's/[[:space:]]*//g;s/,//g' | cut -d: -f2`
     str_rcvwnd=`sed -n '/rcvwnd/p' ${str_program_dir}/server-kcptun.json | sed 's/[[:space:]]*//g;s/,//g' | cut -d: -f2`
     ${str_program_dir}/${program_name} --version
-    fun_clang.cn
+    fun_clang
     #install successfully
     echo ""
     echo "Congratulations, kcp-server install completed!"
@@ -545,14 +541,14 @@ EOF
 }
 ############################### install function ##################################
 function pre_install_clang(){
-    fun_clang.cn
+    fun_clang
     checkos
     check_centosversion
     check_os_bit
     disable_selinux
     clear
-    fun_clang.cn
-    check_net-tools
+    fun_clang
+    check_net_tools
     if [ -s ${str_program_dir}/${program_name} ] && [ -s ${kcp_init} ]; then
         echo "kcptun is installed!"
     else
@@ -569,7 +565,7 @@ function configure_program_server_clang(){
 }
 ############################### uninstall function ##################################
 function uninstall_program_server_clang(){
-    fun_clang.cn
+    fun_clang
     if [ -s ${kcp_init} ] || [ -s ${str_program_dir}/${program_name} ] ; then
         echo "============== Uninstall ${program_name} =============="
         save_config="n"
@@ -613,46 +609,46 @@ function uninstall_program_server_clang(){
 }
 ############################### update function ##################################
 function update_program_server_clang(){
-    fun_clang.cn
-    if [ -s ${kcp_init} ] || [ -s ${str_program_dir}/${program_name} ] ; then
-        echo "============== Update ${program_name} =============="
-        checkos
-        check_centosversion
-        check_os_bit
-        remote_shell_version=`wget --no-check-certificate -qO- ${str_install_shell} | sed -n '/'^version'/p' | cut -d\" -f2`
-        remote_init_version=`wget --no-check-certificate -qO- ${program_init_download_url} | sed -n '/'^version'/p' | cut -d\" -f2`
-        local_init_version=`sed -n '/'^version'/p' ${kcp_init} | cut -d\" -f2`
-        install_shell=${strPath}
-        update_flag="false"
-        if [ ! -z ${remote_shell_version} ] || [ ! -z ${remote_init_version} ];then
-            if [[ "${local_init_version}" < "${remote_init_version}" ]];then
-                echo "========== Update ${program_name} ${kcp_init} =========="
-                if ! wget --no-check-certificate ${program_init_download_url} -O ${kcp_init}; then
-                    echo "Failed to download ${program_name}.init file!"
-                    exit 1
-                else
-                    echo -e "${COLOR_GREEN}${kcp_init} Update successfully !!!${COLOR_END}"
-                    update_flag="true"
-                fi
-            fi
-            if [[ "${version}" < "${remote_shell_version}" ]];then
-                echo "========== Update ${program_name} install-${program_name}.sh =========="
-                if ! wget --no-check-certificate ${str_install_shell} -O ${install_shell}/$0; then
-                    echo "Failed to download install-${program_name}.sh file!"
-                    exit 1
-                else
-                    echo -e "${COLOR_GREEN}install-${program_name}.sh Update successfully !!!${COLOR_END}"
-                    update_flag="true"
-                fi
-            fi
-            if [ "${update_flag}" == 'true' ]; then
-                echo -e "${COLOR_GREEN}Update shell successfully !!!${COLOR_END}"
-                echo ""
-                echo -e "${COLOR_GREEN}Please Re-run${COLOR_END} ${COLOR_PINKBACK_WHITEFONT}$0 update${COLOR_END}"
-                echo ""
+    fun_clang
+    echo "============== Update ${program_name} =============="
+    checkos
+    check_centosversion
+    check_os_bit
+    remote_shell_version=`wget --no-check-certificate -qO- ${str_install_shell} | sed -n '/'^version'/p' | cut -d\" -f2`
+    remote_init_version=`wget --no-check-certificate -qO- ${program_init_download_url} | sed -n '/'^version'/p' | cut -d\" -f2`
+    local_init_version=`sed -n '/'^version'/p' ${kcp_init} | cut -d\" -f2`
+    install_shell=${strPath}
+    update_flag="false"
+    if [ ! -z ${remote_shell_version} ] || [ ! -z ${remote_init_version} ];then
+        if [[ "${local_init_version}" < "${remote_init_version}" ]];then
+            echo "========== Update ${program_name} ${kcp_init} =========="
+            if ! wget --no-check-certificate ${program_init_download_url} -O ${kcp_init}; then
+                echo "Failed to download ${program_name}.init file!"
                 exit 1
+            else
+                echo -e "${COLOR_GREEN}${kcp_init} Update successfully !!!${COLOR_END}"
+                update_flag="true"
             fi
         fi
+        if [[ "${version}" < "${remote_shell_version}" ]];then
+            echo "========== Update ${program_name} install-${program_name}.sh =========="
+            if ! wget --no-check-certificate ${str_install_shell} -O ${install_shell}/$0; then
+                echo "Failed to download install-${program_name}.sh file!"
+                exit 1
+            else
+                echo -e "${COLOR_GREEN}install-${program_name}.sh Update successfully !!!${COLOR_END}"
+                update_flag="true"
+            fi
+        fi
+        if [ "${update_flag}" == 'true' ]; then
+            echo -e "${COLOR_GREEN}Update shell successfully !!!${COLOR_END}"
+            echo ""
+            echo -e "${COLOR_GREEN}Please Re-run${COLOR_END} ${COLOR_PINKBACK_WHITEFONT}$0 update${COLOR_END}"
+            echo ""
+            exit 1
+        fi
+    fi
+    if [ -s ${kcp_init} ] || [ -s ${str_program_dir}/${program_name} ] ; then
         if [ "${update_flag}" == 'false' ]; then
             [ ! -d ${str_program_dir} ] && mkdir -p ${str_program_dir}
             fun_getVer
@@ -699,9 +695,8 @@ update)
     update_program_server_clang 2>&1 | tee /root/${program_name}-update.log
     ;;
 *)
-    fun_clang.cn
+    fun_clang
     echo "Arguments error! [${action} ]"
     echo "Usage: `basename $0` {install|uninstall|update|config}"
     ;;
 esac
-
