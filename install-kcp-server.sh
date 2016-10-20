@@ -7,7 +7,7 @@ export PATH
 #   Author: Clang
 #   Intro:  http://koolshare.cn/forum-72-1.html
 #===============================================================================================
-version="3.2"
+version="3.3"
 str_program_dir="/usr/local/kcp-server"
 kcptun_releases="https://api.github.com/repos/xtaci/kcptun/releases/latest"
 kcptun_api_filename="/tmp/kcptun_api_file.txt"
@@ -181,7 +181,7 @@ function fun_input_mtu(){
 }
 # ====== check packs ======
 function check_net_tools(){
-    netstat -V >/dev/null
+    netstat -V 2>&1 >/dev/null
     if [[ $? -gt 6 ]] ;then
         echo " Run net-tools failed"
         if [ "${OS}" == 'CentOS' ]; then
@@ -196,7 +196,7 @@ function check_net_tools(){
     echo $result
 }
 function check_iptables(){
-    iptables -V >/dev/null
+    iptables -V 2>&1 >/dev/null
     if [[ $? -gt 1 ]] ;then
         echo " Run iptables failed"
         if [ "${OS}" == 'CentOS' ]; then
@@ -211,7 +211,7 @@ function check_iptables(){
     echo $result
 }
 function check_md5sum(){
-    md5sum --version >/dev/null
+    md5sum --version 2>&1 >/dev/null
     if [[ $? -gt 6 ]] ;then
         echo " Run md5sum failed"
     fi
@@ -256,7 +256,7 @@ function fun_download_file(){
             exit 1
         fi
         check_md5sum
-        kcptun_md5_web=$(cat ${kcptun_api_filename} | grep \"body\" | grep ${kcptun_latest_filename} | sed 's/\\r\\n/\n/g' | sed -n '/'${kcptun_latest_filename}'/p' | awk '{print $4}')
+        kcptun_md5_web=$( cat ${kcptun_api_filename} | grep \"body\" | grep ${kcptun_latest_filename} | sed 's/\\r\\n/\n/g' | sed -n '/'${kcptun_latest_filename}'/p' | awk '{print $4}' )
         down_local_md5=`md5sum ${kcptun_latest_filename} | awk '{print $1}'`
         if [ "${down_local_md5}" != "${kcptun_md5_web}" ]; then
             echo "md5sum not match,Failed to download ${kcptun_latest_filename} file!"
@@ -700,3 +700,4 @@ update)
     echo "Usage: `basename $0` {install|uninstall|update|config}"
     ;;
 esac
+
