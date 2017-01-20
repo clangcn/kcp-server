@@ -223,7 +223,7 @@ function check_net_tools(){
     echo $result
 }
 function check_iptables(){
-    iptables -V 2>&1 >/dev/null
+    iptables -V >/dev/null 2>&1
     if [[ $? -gt 1 ]] ;then
         echo " Run iptables failed"
         if [ "${OS}" == 'CentOS' ]; then
@@ -238,7 +238,7 @@ function check_iptables(){
     echo $result
 }
 function check_md5sum(){
-    md5sum --version 2>&1 >/dev/null
+    md5sum --version >/dev/null 2>&1
     if [[ $? -gt 6 ]] ;then
         echo " Run md5sum failed"
     fi
@@ -568,13 +568,11 @@ EOF
 }
 ############################### install function ##################################
 function pre_install_clang(){
-    fun_clang
+    fun_clang "clear"
     checkos
     check_centosversion
     check_os_bit
     disable_selinux
-    clear
-    fun_clang
     check_net_tools
     if [ -s ${str_program_dir}/${program_name} ] && [ -s ${kcp_init} ]; then
         echo "kcptun is installed!"
@@ -592,7 +590,7 @@ function configure_program_server_clang(){
 }
 ############################### uninstall function ##################################
 function uninstall_program_server_clang(){
-    fun_clang
+    fun_clang "clear"
     if [ -s ${kcp_init} ] || [ -s ${str_program_dir}/${program_name} ] ; then
         echo "============== Uninstall ${program_name} =============="
         save_config="n"
@@ -636,7 +634,7 @@ function uninstall_program_server_clang(){
 }
 ############################### update function ##################################
 function update_program_server_clang(){
-    fun_clang
+    fun_clang "clear"
     echo "============== Update ${program_name} =============="
     checkos
     check_centosversion
