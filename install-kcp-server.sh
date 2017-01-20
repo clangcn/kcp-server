@@ -7,7 +7,7 @@ export PATH
 #   Author: Clang
 #   Intro:  http://koolshare.cn/forum-72-1.html
 #===============================================================================================
-version="3.3"
+version="3.4"
 str_program_dir="/usr/local/kcp-server"
 kcptun_releases="https://api.github.com/repos/xtaci/kcptun/releases/latest"
 kcptun_api_filename="/tmp/kcptun_api_file.txt"
@@ -21,6 +21,11 @@ program_init_download_url=https://raw.githubusercontent.com/clangcn/kcp-server/m
 str_install_shell=https://raw.githubusercontent.com/clangcn/kcp-server/master/install-kcp-server.sh
 
 function fun_clang(){
+    local clear_flag=""
+    clear_flag=$1
+    if [[ ${clear_flag} == "clear" ]]; then
+        clear
+    fi
     echo ""
     echo "+---------------------------------------------------------+"
     echo "|        kcptun for Linux Server, Written by Clang        |"
@@ -31,7 +36,30 @@ function fun_clang(){
     echo "+---------------------------------------------------------+"
     echo ""
 }
-
+shell_update(){
+    fun_clang "clear"
+    echo "Check updates for shell..."
+    remote_shell_version=`wget --no-check-certificate -qO- ${str_install_shell} | sed -n '/'^version'/p' | cut -d\" -f2`
+    if [ ! -z ${remote_shell_version} ]; then
+        if [[ "${version}" != "${remote_shell_version}" ]];then
+            echo -e "${COLOR_GREEN}Found a new version,update now!!!${COLOR_END}"
+            echo
+            echo -n "Update shell ..."
+            if ! wget --no-check-certificate -qO $0 ${str_install_shell}; then
+                echo -e " [${COLOR_RED}failed${COLOR_END}]"
+                echo
+                exit 1
+            else
+                echo -e " [${COLOR_GREEN}OK${COLOR_END}]"
+                echo
+                echo -e "${COLOR_GREEN}Please Re-run${COLOR_END} ${COLOR_PINK}$0 ${clang_action}${COLOR_END}"
+                echo
+                exit 1
+            fi
+            exit 1
+        fi
+    fi
+}
 function fun_set_text_color(){
     COLOR_RED='\E[1;31m'
     COLOR_GREEN='\E[1;32m'
@@ -50,7 +78,6 @@ function rootness(){
         exit 1
     fi
 }
-
 function get_char(){
     SAVEDSTTY=`stty -g`
     stty -echo
@@ -256,7 +283,7 @@ function fun_download_file(){
             exit 1
         fi
         check_md5sum
-        kcptun_md5_web=$( cat ${kcptun_api_filename} | grep \"body\" | grep ${kcptun_latest_filename} | sed 's/\\r\\n/\n/g' | sed -n '/'${kcptun_latest_filename}'/p' | awk '{print $4}' )
+        kcptun_md5_web=$( cat ${kcptun_api_filename} | grep \"body\" | grep ${kcptun_latest_filename} | sed 's/\\n/\n/g' | sed -n '/'${kcptun_latest_filename}'/p' | awk '{print $4}' )
         down_local_md5=`md5sum ${kcptun_latest_filename} | awk '{print $1}'`
         if [ "${down_local_md5}" != "${kcptun_md5_web}" ]; then
             echo "md5sum not match,Failed to download ${kcptun_latest_filename} file!"
@@ -614,12 +641,11 @@ function update_program_server_clang(){
     checkos
     check_centosversion
     check_os_bit
-    remote_shell_version=`wget --no-check-certificate -qO- ${str_install_shell} | sed -n '/'^version'/p' | cut -d\" -f2`
     remote_init_version=`wget --no-check-certificate -qO- ${program_init_download_url} | sed -n '/'^version'/p' | cut -d\" -f2`
     local_init_version=`sed -n '/'^version'/p' ${kcp_init} | cut -d\" -f2`
     install_shell=${strPath}
     update_flag="false"
-    if [ ! -z ${remote_shell_version} ] || [ ! -z ${remote_init_version} ];then
+    if [ ! -z ${remote_init_version} ];then
         if [[ "${local_init_version}" < "${remote_init_version}" ]];then
             echo "========== Update ${program_name} ${kcp_init} =========="
             if ! wget --no-check-certificate ${program_init_download_url} -O ${kcp_init}; then
@@ -627,25 +653,7 @@ function update_program_server_clang(){
                 exit 1
             else
                 echo -e "${COLOR_GREEN}${kcp_init} Update successfully !!!${COLOR_END}"
-                update_flag="true"
             fi
-        fi
-        if [[ "${version}" < "${remote_shell_version}" ]];then
-            echo "========== Update ${program_name} install-${program_name}.sh =========="
-            if ! wget --no-check-certificate ${str_install_shell} -O ${install_shell}/$0; then
-                echo "Failed to download install-${program_name}.sh file!"
-                exit 1
-            else
-                echo -e "${COLOR_GREEN}install-${program_name}.sh Update successfully !!!${COLOR_END}"
-                update_flag="true"
-            fi
-        fi
-        if [ "${update_flag}" == 'true' ]; then
-            echo -e "${COLOR_GREEN}Update shell successfully !!!${COLOR_END}"
-            echo ""
-            echo -e "${COLOR_GREEN}Please Re-run${COLOR_END} ${COLOR_PINKBACK_WHITEFONT}$0 update${COLOR_END}"
-            echo ""
-            exit 1
         fi
     fi
     if [ -s ${kcp_init} ] || [ -s ${str_program_dir}/${program_name} ] ; then
@@ -678,6 +686,7 @@ clear
 strPath=`pwd`
 rootness
 fun_set_text_color
+shell_update
 # Initialization
 action=$1
 [  -z $1 ]
@@ -695,9 +704,8 @@ update)
     update_program_server_clang 2>&1 | tee /root/${program_name}-update.log
     ;;
 *)
-    fun_clang
+    fun_clang "clear"
     echo "Arguments error! [${action} ]"
     echo "Usage: `basename $0` {install|uninstall|update|config}"
     ;;
 esac
-
