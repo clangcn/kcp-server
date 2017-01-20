@@ -7,7 +7,7 @@ export PATH
 #   Author: Clang
 #   Intro:  http://koolshare.cn/forum-72-1.html
 #===============================================================================================
-version="3.4"
+version="3.5"
 str_program_dir="/usr/local/kcp-server"
 kcptun_releases="https://api.github.com/repos/xtaci/kcptun/releases/latest"
 kcptun_api_filename="/tmp/kcptun_api_file.txt"
@@ -639,42 +639,39 @@ function update_program_server_clang(){
     checkos
     check_centosversion
     check_os_bit
-    remote_init_version=`wget --no-check-certificate -qO- ${program_init_download_url} | sed -n '/'^version'/p' | cut -d\" -f2`
-    local_init_version=`sed -n '/'^version'/p' ${kcp_init} | cut -d\" -f2`
     install_shell=${strPath}
-    update_flag="false"
-    if [ ! -z ${remote_init_version} ];then
-        if [[ "${local_init_version}" < "${remote_init_version}" ]];then
-            echo "========== Update ${program_name} ${kcp_init} =========="
-            if ! wget --no-check-certificate ${program_init_download_url} -O ${kcp_init}; then
-                echo "Failed to download ${program_name}.init file!"
-                exit 1
-            else
-                echo -e "${COLOR_GREEN}${kcp_init} Update successfully !!!${COLOR_END}"
-            fi
-        fi
-    fi
     if [ -s ${kcp_init} ] || [ -s ${str_program_dir}/${program_name} ] ; then
-        if [ "${update_flag}" == 'false' ]; then
-            [ ! -d ${str_program_dir} ] && mkdir -p ${str_program_dir}
-            fun_getVer
-            ${kcp_init} stop
-            sleep 1
-            rm -f /usr/bin/${program_name} ${str_program_dir}/${program_name} ${str_program_dir}/${program_socks5_filename}
-            fun_download_file
-            if [ "${OS}" == 'CentOS' ]; then
-                chmod +x ${kcp_init}
-                chkconfig --add ${program_name}
-            else
-                chmod +x ${kcp_init}
-                update-rc.d -f ${program_name} defaults
+        remote_init_version=`wget --no-check-certificate -qO- ${program_init_download_url} | sed -n '/'^version'/p' | cut -d\" -f2`
+        local_init_version=`sed -n '/'^version'/p' ${kcp_init} | cut -d\" -f2`
+        if [ ! -z ${remote_init_version} ];then
+            if [[ "${local_init_version}" < "${remote_init_version}" ]];then
+                echo "========== Update ${program_name} ${kcp_init} =========="
+                if ! wget --no-check-certificate ${program_init_download_url} -O ${kcp_init}; then
+                    echo "Failed to download ${program_name}.init file!"
+                    exit 1
+                else
+                    echo -e "${COLOR_GREEN}${kcp_init} Update successfully !!!${COLOR_END}"
+                fi
             fi
-            [ -s ${kcp_init} ] && ln -s ${kcp_init} /usr/bin/${program_name}
-            [ ! -x ${kcp_init} ] && chmod 755 ${kcp_init}
-            ${kcp_init} start
-            ${str_program_dir}/${program_name} -version
-            echo "${program_name} update success!"
         fi
+        [ ! -d ${str_program_dir} ] && mkdir -p ${str_program_dir}
+        fun_getVer
+        ${kcp_init} stop
+        sleep 1
+        rm -f /usr/bin/${program_name} ${str_program_dir}/${program_name} ${str_program_dir}/${program_socks5_filename}
+        fun_download_file
+        if [ "${OS}" == 'CentOS' ]; then
+            chmod +x ${kcp_init}
+            chkconfig --add ${program_name}
+        else
+            chmod +x ${kcp_init}
+            update-rc.d -f ${program_name} defaults
+        fi
+        [ -s ${kcp_init} ] && ln -s ${kcp_init} /usr/bin/${program_name}
+        [ ! -x ${kcp_init} ] && chmod 755 ${kcp_init}
+        ${kcp_init} start
+        ${str_program_dir}/${program_name} -version
+        echo "${program_name} update success!"
     else
         echo "${program_name} Not install!"
     fi
