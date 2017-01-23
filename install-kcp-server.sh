@@ -7,7 +7,7 @@ export PATH
 #   Author: Clang
 #   Intro:  http://koolshare.cn/forum-72-1.html
 #===============================================================================================
-version="3.5"
+version="3.6"
 str_program_dir="/usr/local/kcp-server"
 kcptun_releases="https://api.github.com/repos/xtaci/kcptun/releases/latest"
 kcptun_api_filename="/tmp/kcptun_api_file.txt"
@@ -282,13 +282,13 @@ function fun_download_file(){
             echo "Failed to download ${kcptun_latest_filename} file!"
             exit 1
         fi
-        check_md5sum
-        kcptun_md5_web=$( cat ${kcptun_api_filename} | grep \"body\" | grep ${kcptun_latest_filename} | sed 's/\\n/\n/g' | sed -n '/'${kcptun_latest_filename}'/p' | awk '{print $4}' )
-        down_local_md5=`md5sum ${kcptun_latest_filename} | awk '{print $1}'`
-        if [ "${down_local_md5}" != "${kcptun_md5_web}" ]; then
-            echo "md5sum not match,Failed to download ${kcptun_latest_filename} file!"
-            exit 1
-        fi
+        #check_md5sum
+        #kcptun_md5_web=$( cat ${kcptun_api_filename} | grep \"body\" | grep ${kcptun_latest_filename} | sed 's/\\n/\n/g' | sed -n '/'${kcptun_latest_filename}'/p' | awk '{print $4}' )
+        #down_local_md5=`md5sum ${kcptun_latest_filename} | awk '{print $1}'`
+        #if [ "${down_local_md5}" != "${kcptun_md5_web}" ]; then
+        #    echo "md5sum not match,Failed to download ${kcptun_latest_filename} file!"
+        #    exit 1
+        #fi
         tar xzf ${kcptun_latest_filename}
         mv server_linux_${ARCHS} ${str_program_dir}/${program_name}
         rm -f ${kcptun_latest_filename} client_linux_${ARCHS} ${kcptun_api_filename}
